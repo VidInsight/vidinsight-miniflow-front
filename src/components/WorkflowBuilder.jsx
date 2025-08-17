@@ -8,7 +8,6 @@ import {
   useEdgesState,
   addEdge,
   ConnectionLineType,
-  Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -709,11 +708,7 @@ const WorkflowBuilder = () => {
           />
           <Background variant="dots" gap={20} size={1} color="#e5e7eb" />
           
-          <Panel position="top-center">
-            <div className="bg-white px-4 py-2 rounded-lg shadow-lg border border-gray-200">
-              <h1 className="text-lg font-semibold text-gray-800">Workflow Builder</h1>
-            </div>
-          </Panel>
+          
         </ReactFlow>
       </div>
 

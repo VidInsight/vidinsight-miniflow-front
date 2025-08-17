@@ -114,7 +114,7 @@ function Dashboard() {
             changeType="positive"
           />
           <StatsCard
-            title="Çalışan"
+            title="Çalışan Workflow"
             value={stats.running}
             icon={TrendingUp}
             color="bg-green-500"
@@ -122,7 +122,7 @@ function Dashboard() {
             changeType="neutral"
           />
           <StatsCard
-            title="Tamamlanan"
+            title="Tamamlanan Workflow"
             value={stats.completed}
             icon={Clock}
             color="bg-purple-500"
@@ -130,7 +130,7 @@ function Dashboard() {
             changeType="positive"
           />
           <StatsCard
-            title="Başarısız"
+            title="Başarısız Workflow"
             value={stats.failed}
             icon={AlertCircle}
             color="bg-red-500"
