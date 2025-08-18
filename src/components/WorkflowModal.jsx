@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Clock, Calendar, User, Settings, ChevronDown } from 'lucide-react';
+import { X, Clock, Calendar, User, Settings, ChevronDown, Edit,Trash2} from 'lucide-react';
 import { apiService } from '../services/api';
 import ExecutionResults from './ExecutionResults';
 
-export default function WorkflowModal({ workflow, isOpen, onClose }) {
+export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
   const [executionHistory, setExecutionHistory] = useState([]);
   const [averageDuration, setAverageDuration] = useState('Bilinmiyor');
   const [lastExecutionDate, setLastExecutionDate] = useState('Bilinmiyor');
@@ -11,6 +11,33 @@ export default function WorkflowModal({ workflow, isOpen, onClose }) {
   const [error, setError] = useState(null);
   const [selectedExecutionId, setSelectedExecutionId] = useState(null);
   const [showExecutionResults, setShowExecutionResults] = useState(false);
+
+    // Workflow silme işlemi
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState(null);
+
+    // Silme onayı için modal
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+    const handleDeleteWorkflow = async () => {
+      if (!workflow?.id || deleting) return;
+      setShowDeleteConfirm(true);
+    };
+
+    const confirmDeleteWorkflow = async () => {
+      setDeleting(true);
+      setDeleteError(null);
+      try {
+        await apiService.deleteWorkflow(workflow.id);
+        setShowDeleteConfirm(false);
+        if (onClose) onClose();
+      } catch (err) {
+        setDeleteError('Workflow silinirken hata oluştu');
+        console.error('Error deleting workflow:', err);
+      } finally {
+        setDeleting(false);
+      }
+    };
 
   // Workflow modal açıldığında execution geçmişini getir
   useEffect(() => {
@@ -85,25 +112,64 @@ export default function WorkflowModal({ workflow, isOpen, onClose }) {
         return 'bg-gray-100 text-gray-600';
     }
   };
-
+const handleEditClick = (e) => {
+    e.stopPropagation(); // Prevent card click event
+    if (onEdit) {
+      onEdit(workflow);
+    }
+  };
   return (
     <>
 <div className="fixed inset-0 bg-gray-800/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[100vh] overflow-y-auto">
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">{workflow.name}</h2>
-              <p className="text-gray-600 mt-1">{workflow.description}</p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+  <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[100vh] overflow-y-auto">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-6 border-b border-gray-200">
+      
+      {/* Başlık ve açıklama + Edit butonu */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 w-full">
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold text-gray-900">{workflow.name}</h2>
+          <p className="text-gray-600 mt-1">{workflow.description}</p>
+        </div>
+
+        {/* Edit butonu başlığın yanında */}
+        <button
+          onClick={handleEditClick}
+          className="mt-3 sm:mt-0 p-2  hover:bg-gray-100  rounded-full transition-all duration-200"
+          title="Düzenle"
+        >
+          <Edit className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Close butonu */}
+      <button
+        onClick={onClose}
+        className="mt-3 sm:mt-0 p-2 hover:bg-gray-100 rounded-full transition-colors"
+      >
+        <X className="w-6 h-6" />
+      </button>
+
+
+      {/* Delete butonu */}
+        <button
+            onClick={handleDeleteWorkflow}
+            className={`mt-3 sm:mt-0 p-2 hover:bg-gray-100 rounded-full transition-colors ${deleting ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={deleting}
+            title="Workflow'u Sil"
+          >
+            <Trash2 />
+          </button>
+    </div>
+ 
+
 
           <div className="p-6 space-y-8">
+              {/* Silme hatası mesajı */}
+              {deleteError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <p className="text-red-800 text-sm">{deleteError}</p>
+                </div>
+              )}
             {/* Workflow Details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-gray-50 rounded-lg p-4">
@@ -201,6 +267,31 @@ export default function WorkflowModal({ workflow, isOpen, onClose }) {
           onClose={handleCloseExecutionResults}
         />
       )}
+
+        {/* Silme onay modalı */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full">
+              <h3 className="text-lg font-semibold mb-4">Workflow'u silmek istediğinize emin misiniz?</h3>
+              <div className="flex justify-end space-x-3">
+                <button
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                >
+                  Vazgeç
+                </button>
+                <button
+                  className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                  onClick={confirmDeleteWorkflow}
+                  disabled={deleting}
+                >
+                  Sil
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </>
   );
 }

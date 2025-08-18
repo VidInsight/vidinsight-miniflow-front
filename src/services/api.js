@@ -24,6 +24,48 @@ export const apiService = {
     }
   },
 
+
+    // ✅ Workflow sil
+    async deleteWorkflow(workflowId) {
+      try {
+        console.log('🗑️ Deleting workflow with ID:', workflowId);
+        const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/delete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ API Error Response:', errorText);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Workflow deleted successfully:', data);
+        return {
+          success: true,
+          message: 'Workflow başarıyla silindi',
+          data: data
+        };
+      } catch (error) {
+        console.error('❌ Error deleting workflow:', error);
+        throw error;
+      }
+    },
+
+
+
+
+
+
+
+
+
+
+
+
   // Workflow verilerini kart formatına dönüştür
   // API'den gelen workflow verisini dashboard'da kullanılacak kart formatına dönüştürür
   transformWorkflowsToCards(workflows) {
@@ -890,6 +932,7 @@ export const apiService = {
       throw error;
     }
   },
+
 
   // ✅ Workflow execution geçmişini getir
   async getWorkflowExecutions(workflowId) {

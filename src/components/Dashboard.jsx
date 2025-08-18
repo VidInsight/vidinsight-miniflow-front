@@ -231,11 +231,12 @@ function Dashboard() {
 
       {/* Modal */}
       {isModalOpen && selectedWorkflow && (
-        <WorkflowModal
-          workflow={selectedWorkflow}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
+          <WorkflowModal
+            workflow={selectedWorkflow}
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onEdit={handleEditWorkflow}
+          />
       )}
 
       {/* ✅ Create Workflow Modal */}
@@ -249,3 +250,9 @@ function Dashboard() {
 }
 
 export default Dashboard
+
+  // Workflow düzenleme fonksiyonu
+  function handleEditWorkflow(workflow) {
+    // Burada düzenleme modalı açılabilir veya başka bir işlem yapılabilir
+    alert(`Düzenleme: ${workflow.name}`);
+  }
