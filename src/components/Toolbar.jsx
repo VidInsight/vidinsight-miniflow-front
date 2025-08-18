@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Play, Save, Download, Upload, Undo, Redo, ZoomIn, ZoomOut, Loader } from 'lucide-react';
+import { Play, Save, Download, Upload, Undo, Redo, ZoomIn, ZoomOut, Loader,House } from 'lucide-react';
 import WorkflowExecutor from '../services/WorkflowExecutor';
 import ExecutionResults from './ExecutionResults';
 import { apiService } from '../services/api';
@@ -40,6 +40,9 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
     return nodesData;
   }, [nodes]);
 
+  const goToDashboard = () => {
+    navigate('/dashboard'); // Dashboard sayfasının route'u
+  };
   // Edges verisini API formatına çevirme - ilk edge'i atla (source === '1' ise)
   const getEdgesData = useCallback(() => {
     if (!edges || edges.length === 0) return [];
@@ -221,6 +224,15 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
           title="Import"
         >
           <Upload className="w-4 h-4 text-gray-600" />
+        </button>
+        {/* Dashboard Button */}
+        <button
+          className="p-2 hover:bg-gray-100 rounded-md transition-colors" 
+          title='Dashboard'
+          onClick={goToDashboard}
+
+        >
+          <House className="w-4 h-4 text-gray-600" />
         </button>
       </div>
 
