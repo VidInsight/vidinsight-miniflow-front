@@ -222,44 +222,6 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
         >
           <Upload className="w-4 h-4 text-gray-600" />
         </button>
-
-        <div className="h-6 w-px bg-gray-300"></div>
-
-        {/* Undo Button */}
-        <button 
-          className="p-2 hover:bg-gray-100 rounded-md transition-colors" 
-          title="Undo"
-          disabled={true} // Henüz implement edilmedi
-        >
-          <Undo className="w-4 h-4 text-gray-400" />
-        </button>
-
-        {/* Redo Button */}
-        <button 
-          className="p-2 hover:bg-gray-100 rounded-md transition-colors" 
-          title="Redo"
-          disabled={true} // Henüz implement edilmedi
-        >
-          <Redo className="w-4 h-4 text-gray-400" />
-        </button>
-
-        <div className="h-6 w-px bg-gray-300"></div>
-
-        {/* Zoom In Button */}
-        <button 
-          className="p-2 hover:bg-gray-100 rounded-md transition-colors" 
-          title="Zoom In"
-        >
-          <ZoomIn className="w-4 h-4 text-gray-600" />
-        </button>
-
-        {/* Zoom Out Button */}
-        <button 
-          className="p-2 hover:bg-gray-100 rounded-md transition-colors" 
-          title="Zoom Out"
-        >
-          <ZoomOut className="w-4 h-4 text-gray-600" />
-        </button>
       </div>
 
       {/* Execution Results Modal */}

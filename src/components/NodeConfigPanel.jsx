@@ -279,7 +279,7 @@ const NodeConfigPanel = ({ node, fromSelectedNodes, onClose, onUpdateNode, onDel
                   const error = validateNodeName(e.target.value);
                   setNameError(error);
                 }}
-                className={`font-medium text-gray-800 bg-transparent border-none outline focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 w-full ${
+                className={`font-medium text-gray-800 bg-transparent border-none outline focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 w-full -z-10 ${
                   nameError ? 'ring-2 ring-red-500' : ''
                 }`}
                 placeholder="Node adı"
