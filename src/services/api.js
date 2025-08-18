@@ -55,17 +55,6 @@ export const apiService = {
       }
     },
 
-
-
-
-
-
-
-
-
-
-
-
   // Workflow verilerini kart formatına dönüştür
   // API'den gelen workflow verisini dashboard'da kullanılacak kart formatına dönüştürür
   transformWorkflowsToCards(workflows) {
@@ -76,8 +65,7 @@ export const apiService = {
       lastRun: this.formatDate(workflow.updated_at),
       duration: this.calculateDuration(workflow.created_at, workflow.updated_at),
       description: workflow.description || 'Açıklama bulunmuyor',
-      steps: workflow.nodes ? workflow.nodes.length : 0,
-      completedSteps: this.calculateCompletedSteps(workflow),
+      steps: workflow.node_count,
       priority: workflow.priority || 0,
       created_at: workflow.created_at,
       updated_at: workflow.updated_at,
@@ -142,25 +130,7 @@ export const apiService = {
 
   // Tamamlanan adımları hesapla
   // Workflow'da tamamlanan adım sayısını workflow durumuna göre hesaplar
-  calculateCompletedSteps(workflow) {
-    if (!workflow.nodes || workflow.nodes.length === 0) return 0;
-    
-    // Draft durumunda hiç adım tamamlanmamış
-    if (workflow.status === 'draft') return 0;
-    
-    // Diğer durumlar için basit bir hesaplama
-    const totalSteps = workflow.nodes.length;
-    switch (workflow.status) {
-      case 'active':
-        return Math.floor(totalSteps / 2); // Yarısı tamamlanmış
-      case 'completed':
-        return totalSteps; // Hepsi tamamlanmış
-      case 'error':
-        return Math.floor(totalSteps * 0.3); // %30'u tamamlanmış
-      default:
-        return 0;
-    }
-  },
+ 
 
   // Workflow şablonları
   // Farklı tipte örnek workflow şablonları döndürür

@@ -61,26 +61,11 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
   }, [edges]);
 
   // Workflow verisini toplama
-  const getWorkflowData = useCallback(() => {
-    return {
-      name: currentWorkflowName,
-      description: 'Workflow description',
-      nodes: getNodesData(),
-      edges: getEdgesData(),
-      triggers: [
-        {
-          trigger_type: "manual",
-          config: {},
-          is_active: true
-        }
-      ]
-    };
-  }, [nodes, edges, currentWorkflowName, workflowId, getNodesData]);
 
   // Workflow çalıştırma
   const handleRunWorkflow = async () => {
-    const workflowData = getWorkflowData();
-    
+              alert('Workflow çalışıyor, sonuçları ana sayfada görebilirsiniz...')
+
     /*if (!workflowData.nodes || workflowData.nodes.length === 0) {
       alert('Workflow verisi bulunamadı veya boş!');
       return;
@@ -125,27 +110,7 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
     }
   };
 
-  // Workflow kaydetme
-  const handleSaveWorkflow = async () => {
-    try {
-      setIsSaving(true);
-      
-      console.log('🔄 Saving workflow name:', currentWorkflowName);
-      
-      // Sadece workflow adını güncelle
-      const result = await apiService.updateWorkflowName(workflowId, currentWorkflowName);
-      console.log('✅ Workflow name updated:', result);
-      
-      // Başarı mesajı göster
-      alert('Workflow adı başarıyla güncellendi!');
-      
-    } catch (error) {
-      console.error('❌ Save error:', error);
-      alert('Workflow adı güncellenirken hata oluştu: ' + error.message);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+ 
 
   // Sonuçları kapatma
   const handleCloseResults = () => {
@@ -158,6 +123,7 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
         {/* Run Button */}
         <button
           onClick={handleRunWorkflow}
+
           disabled={isRunning || !nodes || nodes.length === 0}
           className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
             isRunning || !nodes || nodes.length === 0
@@ -166,46 +132,24 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
           }`}
           title={!nodes || nodes.length === 0 ? 'Workflow boş, çalıştırılamaz' : 'Workflow\'u çalıştır'}
         >
-          {isRunning ? (
-            <Loader className="w-4 h-4 animate-spin" />
-          ) : (
-            <Play className="w-4 h-4" />
-          )}
+          
           <span className="text-sm font-medium">
-            {isRunning ? 'Running...' : 'Run'}
+            {'Run'}
           </span>
         </button>
 
-        {/* Save Button */}
-        <button
-          onClick={handleSaveWorkflow}
-          disabled={isSaving || !nodes || nodes.length === 0}
-          className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
-            isSaving || !nodes || nodes.length === 0
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
-          title={!nodes || nodes.length === 0 ? 'Workflow boş, kaydedilemez' : 'Workflow\'u kaydet'}
-        >
-          {isSaving ? (
-            <Loader className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
-          <span className="text-sm font-medium">
-            {isSaving ? 'Saving...' : 'Save'}
-          </span>
-        </button>
+        <div className="h-6 w-px bg-gray-300"></div>
+        
 
         {/* Workflow Name Input */}
-        <input
+        <text
           type="text"
-          value={currentWorkflowName}
-          onChange={(e) => setCurrentWorkflowName(e.target.value)}
-          className="border border-gray-300 p-2 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder='Workflow Name'
-          disabled={isSaving}
-        />
+          className=" p-2 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+
+        Workflow Name: {currentWorkflowName }
+          
+        </text>
 
         <div className="h-6 w-px bg-gray-300"></div>
 
@@ -218,6 +162,8 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
           <Download className="w-4 h-4 text-gray-600" />
         </button>
 
+        <div className="h-6 w-px bg-gray-300"></div>
+
         {/* Import Button */}
         <button 
           className="p-2 hover:bg-gray-100 rounded-md transition-colors" 
@@ -225,6 +171,9 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
         >
           <Upload className="w-4 h-4 text-gray-600" />
         </button>
+
+          <div className="h-6 w-px bg-gray-300"></div>
+
         {/* Dashboard Button */}
         <button
           className="p-2 hover:bg-gray-100 rounded-md transition-colors" 

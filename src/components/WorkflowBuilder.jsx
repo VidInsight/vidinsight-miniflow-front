@@ -693,7 +693,7 @@ const WorkflowBuilder = () => {
             nodeColor="#3b82f6"
             maskColor="rgba(0, 0, 0, 0.1)"
           />
-          <Background variant="dots" gap={20} size={1} color="#e5e7eb" />
+          <Background variant="dots" gap={20} size={1} color="#343536ff" />
           
           
         </ReactFlow>

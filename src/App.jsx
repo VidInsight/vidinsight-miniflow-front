@@ -178,7 +178,6 @@ function App() {
         <div className="h-screen bg-gray-50">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/workflow-builder" element={<WorkflowBuilder />} />
             <Route path="/workflow-builder/:workflowId" element={<WorkflowBuilder />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

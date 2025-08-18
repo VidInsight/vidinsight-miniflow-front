@@ -78,31 +78,12 @@ export default function WorkflowCard({ workflow, onClick, onEdit }) {
       </div>
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between text-sm text-gray-600">
-          <div className="flex items-center">
-            <Clock className="w-4 h-4 mr-1" />
-            <span>Son çalışma: {workflow.lastRun}</span>
-          </div>
-          <span>Süre: {workflow.duration}</span>
-        </div>
-
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Adımlar</span>
-            <span className="font-medium text-gray-900">
-              {workflow.completedSteps}/{workflow.steps}
-            </span>
+            <span className="text-gray-600">Toplam Node Sayısı : {workflow.steps}</span>
+            
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className={`h-2 rounded-full transition-all duration-500 ${
-                workflow.status === 'completed' ? 'bg-green-500' :
-                workflow.status === 'failed' ? 'bg-red-500' :
-                workflow.status === 'running' ? 'bg-blue-500' : 'bg-amber-500'
-              }`}
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
+          
         </div>
       </div>
     </div>
