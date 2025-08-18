@@ -158,7 +158,7 @@ const NodeConfigPanel = ({ node, fromSelectedNodes, onClose, onUpdateNode, onDel
     if (!fromSelectedNodes || fromSelectedNodes.length === 0) {
       return (
         <div className="text-gray-500 text-sm">
-          Bu node'a gelen bağlantı yok veya önceki node'ların çıktı parametresi bulunamadı.
+          Bu node'a gelen bağlantı yok.
         </div>
       );
     }

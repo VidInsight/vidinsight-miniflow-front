@@ -19,19 +19,6 @@ import Toolbar from './Toolbar';
 import { useParams } from 'react-router-dom';
 import { apiService } from '../services/api';
 
-const initialNodes = [
-  {
-    id: '1',
-    type: 'custom',
-    position: { x: 250, y: 100 },
-    data: { 
-      label: 'Start', 
-      type: 'trigger',
-      icon: '🚀',
-      description: 'Workflow başlangıç noktası'
-    },
-  },
-];
 
 const initialEdges = [];
 
@@ -39,7 +26,7 @@ const WorkflowBuilder = () => {
   // ✅ URL'den workflow ID'sini al
   const { workflowId } = useParams();
   
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState(null);
   const [fromSelectedNodes, setFromSelectedNodes] = useState(null);
