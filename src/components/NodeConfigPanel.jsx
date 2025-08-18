@@ -5,6 +5,8 @@ import { apiService } from '../services/api';
 
 const NodeConfigPanel = ({ node, fromSelectedNodes, onClose, onUpdateNode, onDeleteNode, workflowId, nodes }) => {
   const [config, setConfig] = useState({});
+  const [showParamSelector, setShowParamSelector] = useState({}); // { fieldName: boolean }
+  const [paramSelectorField, setParamSelectorField] = useState('');
   const [nodeName, setNodeName] = useState('');
   const [copiedItems, setCopiedItems] = useState(new Set());
   const [isSaving, setIsSaving] = useState(false);
@@ -112,104 +114,98 @@ const NodeConfigPanel = ({ node, fromSelectedNodes, onClose, onUpdateNode, onDel
       );
     }
 
+    // Önceki node'lardan gelen çıktı parametrelerini hazırla
+    const availableParams = (fromSelectedNodes || [])
+      .flatMap(n =>
+        n.output_params && typeof n.output_params === 'object'
+          ? Object.entries(n.output_params).map(([key, param]) => ({
+              label: `${n.name} - ${key}`,
+              value: `{{${n.id}.${key}}}`,
+              type: param.type,
+              description: param.description || '',
+            }))
+          : []
+      );
+
     return (
       <div className="space-y-4">
         {node.data.configFields.map((field) => (
-          <div key={field.name}>
+          <div key={field.name} className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
-            
-            {field.type === 'select' ? (
-              <select
-                value={config[field.name] || field.defaultValue || ''}
-                onChange={(e) => setConfig(prev => ({ ...prev, [field.name]: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {field.options?.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            ) : field.type === 'textarea' ? (
-              <textarea
-                value={config[field.name] || field.defaultValue || ''}
-                onChange={(e) => setConfig(prev => ({ ...prev, [field.name]: e.target.value }))}
-                placeholder={field.placeholder}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                rows={3}
-              />
-            ) : (
-              <input
-                type={field.type}
-                value={config[field.name] || field.defaultValue || ''}
-                onChange={(e) => setConfig(prev => ({ ...prev, [field.name]: e.target.value }))}
-                placeholder={field.placeholder}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const renderFromSelectedNodes = () => {
-    if (!fromSelectedNodes || fromSelectedNodes.length === 0) {
-      return (
-        <div className="text-gray-500 text-sm">
-          Bu node'a gelen bağlantı yok.
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-2">
-        {fromSelectedNodes.map((node) => (
-          <div key={node.id}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {node.id} - {node.name}
-            </label>  
-            {node.output_params && typeof node.output_params === 'object' && Object.keys(node.output_params).length > 0 ? (
-              Object.entries(node.output_params).map(([key, param]) => {
-                const uniqueKey = `${node.id}.${key}`;
-                const isCopied = copiedItems.has(uniqueKey);
-                
-                return (
-                  <div key={key} className="border p-3 rounded bg-gray-50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-gray-700">
-                          {key} - {'{{' + node.id + '.' + key + '}}'}
-                        </div>
-                        <div className="text-xs text-gray-500">Tür: {param.type || 'unknown'}</div>
-                        {param.description && (
-                          <div className="text-xs text-gray-400 mt-1">{param.description}</div>
-                        )}
-                      </div>
-                      {/* ✅ Sadece tıklanan buton için check işareti */}
+            <div className="flex items-center space-x-2">
+              {field.type === 'select' ? (
+                <select
+                  value={config[field.name] || field.defaultValue || ''}
+                  onChange={(e) => setConfig(prev => ({ ...prev, [field.name]: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {field.options?.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              ) : field.type === 'textarea' ? (
+                <textarea
+                  value={config[field.name] || field.defaultValue || ''}
+                  onChange={(e) => setConfig(prev => ({ ...prev, [field.name]: e.target.value }))}
+                  placeholder={field.placeholder}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={3}
+                />
+              ) : (
+                <input
+                  type={field.type}
+                  value={config[field.name] || field.defaultValue || ''}
+                  onChange={(e) => setConfig(prev => ({ ...prev, [field.name]: e.target.value }))}
+                  placeholder={field.placeholder}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              )}
+              {/* Parametre seçme butonu */}
+              {availableParams.length > 0 && (
+                <button
+                  type="button"
+                  className="ml-2 px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 text-xs border border-gray-300"
+                  onClick={() => {
+                    setShowParamSelector({ [field.name]: true });
+                    setParamSelectorField(field.name);
+                  }}
+                  title="Önceki node çıktısı ekle"
+                >
+                  Node çıktısı seçiniz
+                </button>
+              )}
+            </div>
+            {/* Dropdown/modal - basit dropdown olarak ekliyorum */}
+            {showParamSelector[field.name] && (
+              <div className="absolute z-10 mt-2 bg-white border border-gray-300 rounded shadow-lg w-64">
+                <div className="p-2 text-xs text-gray-500">Önceki node'lardan gelen çıktı parametreleri:</div>
+                <ul>
+                  {availableParams.map((param, idx) => (
+                    <li key={idx}>
                       <button
-                        onClick={() => handleCopy(node.id, key)}
-                        className={`ml-3 p-2 rounded-lg transition-colors ${
-                          isCopied 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                        title={`Kopyala: {{${node.id}.${key}}}`}
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-sm"
+                        onClick={() => {
+                          setConfig(prev => ({ ...prev, [field.name]: param.value }));
+                          setShowParamSelector({});
+                        }}
+                        title={param.description}
                       >
-                        {isCopied ? (
-                          <Check className="w-4 h-4" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
+                        <span className="font-medium">{param.label}</span>
+                        <span className="ml-2 text-gray-400">{param.value}</span>
+                        <span className="ml-2 text-gray-500">({param.type})</span>
                       </button>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="text-gray-500 text-sm">
-                Bu node'un çıktı parametresi yok.
+                    </li>
+                  ))}
+                </ul>
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-xs text-gray-600 hover:bg-gray-100 border-t border-gray-200"
+                    onClick={() => setShowParamSelector({})}
+                  >Kapat</button>
               </div>
             )}
           </div>
@@ -217,6 +213,8 @@ const NodeConfigPanel = ({ node, fromSelectedNodes, onClose, onUpdateNode, onDel
       </div>
     );
   };
+
+ 
 
   // ✅ outputParams gösterimi için düzeltme
   const renderOutputParams = () => {
@@ -281,7 +279,7 @@ const NodeConfigPanel = ({ node, fromSelectedNodes, onClose, onUpdateNode, onDel
                   const error = validateNodeName(e.target.value);
                   setNameError(error);
                 }}
-                className={`font-medium text-gray-800 bg-transparent border-none outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 w-full ${
+                className={`font-medium text-gray-800 bg-transparent border-none outline focus:ring-2 focus:ring-blue-500 rounded px-2 py-1 w-full ${
                   nameError ? 'ring-2 ring-red-500' : ''
                 }`}
                 placeholder="Node adı"
@@ -296,15 +294,13 @@ const NodeConfigPanel = ({ node, fromSelectedNodes, onClose, onUpdateNode, onDel
           </div>
         </div>
 
-        {/* ✅ Önceki Düğümlerden Gelen Parametreler */}
-        <div className="border-t border-gray-200 pt-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-4">Önceki Düğümlerden Kullanılabilecek Çıktı Parametreleri</h4>
-          {renderFromSelectedNodes()}
-        </div>
+     
 
         {/* Input Parametreler */}
-        <div className="border-t border-gray-200 pt-6">
+        <div className="border-t border-gray-200 pt-6"> 
           <h4 className="text-sm font-medium text-gray-700 mb-4">Script Parametreleri</h4>
+                          <div className="p-2 text-xs text-gray-500">Önceki node'lardan gelen çıktı parametrelerini kullanabilirsiniz.</div>
+
           {renderDynamicConfigFields()}
         </div>
 
