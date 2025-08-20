@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Play, Save, Download, Upload, Undo, Redo, ZoomIn, ZoomOut, Loader,House } from 'lucide-react';
-import WorkflowExecutor from '../services/WorkflowExecutor';
+import { Download, Upload,House } from 'lucide-react';
 import ExecutionResults from './ExecutionResults';
 import { apiService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +8,6 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [executionResult, setExecutionResult] = useState(null);
   const [currentWorkflowName, setCurrentWorkflowName] = useState(workflowName || 'Yeni Workflow');
-  const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -119,7 +117,7 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
 
   return (
     <>
-      <div className="absolute top-4 left-4 z-10 bg-white rounded-lg shadow-lg border border-gray-200 p-2 flex items-center space-x-2">
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white rounded-lg shadow-lg border border-gray-200 p-2 flex items-center space-x-2">
         {/* Run Button */}
         <button
           onClick={handleRunWorkflow}
@@ -139,7 +137,6 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
         </button>
 
         <div className="h-6 w-px bg-gray-300"></div>
-        
 
         {/* Workflow Name Input */}
         <text

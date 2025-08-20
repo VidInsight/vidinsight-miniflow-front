@@ -656,7 +656,6 @@ const WorkflowBuilder = () => {
         )}
         
         {/* ✅ Toolbar'a workflowId'yi gönder */}
-        {/* ✅ Toolbar'a workflowId'yi gönder */}
         <Toolbar 
           nodes={nodes} 
           edges={edges}
