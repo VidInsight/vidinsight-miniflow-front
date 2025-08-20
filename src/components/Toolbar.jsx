@@ -10,6 +10,24 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
   const [currentWorkflowName, setCurrentWorkflowName] = useState(workflowName || 'Yeni Workflow');
   const navigate = useNavigate();
 
+  // Export workflow as JSON
+  const handleExportWorkflow = useCallback(() => {
+    if (!nodes || nodes.length === 0) return;
+    const workflowJson = {
+      workflowId,
+      workflowName: currentWorkflowName,
+      nodes,
+      edges
+    };
+    const dataStr = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(workflowJson, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `${currentWorkflowName || 'workflow'}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }, [nodes, edges, workflowId, currentWorkflowName]);
+
   useEffect(() => {
     if (workflowName && workflowName !== 'Yükleniyor...') {
       console.log('🔄 Toolbar: workflowName updated:', workflowName);
@@ -155,6 +173,7 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
           className="p-2 hover:bg-gray-100 rounded-md transition-colors" 
           title="Export"
           disabled={!nodes || nodes.length === 0}
+          onClick={handleExportWorkflow}
         >
           <Download className="w-4 h-4 text-gray-600" />
         </button>
