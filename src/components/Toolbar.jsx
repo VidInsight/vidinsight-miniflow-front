@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Download, Upload,House } from 'lucide-react';
+import { Download, Upload, House } from 'lucide-react';
 import ExecutionResults from './ExecutionResults';
 import { apiService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -38,10 +38,10 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
   // Nodes verisini API formatına çevirme - ilk node'u atla (id === '1' ise)
   const getNodesData = useCallback(() => {
     if (!nodes || nodes.length === 0) return [];
-    
+
     // İlk node'un id'si '1' ise 2. node'dan başla
     const filteredNodes = nodes[0]?.id === '1' ? nodes.slice(1) : nodes;
-    
+
     const nodesData = filteredNodes.map(node => ({
       name: node.id,
       script_name: node.data.label || node.data.type,
@@ -51,27 +51,28 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
         return params;
       }, {}) : {}
     }));
-    
+
     console.log('🔄 Converted nodes data (filtered):', nodesData);
     return nodesData;
   }, [nodes]);
 
+  {/*Dashboard yönlendirme */ }
   const goToDashboard = () => {
     navigate('/dashboard'); // Dashboard sayfasının route'u
   };
   // Edges verisini API formatına çevirme - ilk edge'i atla (source === '1' ise)
   const getEdgesData = useCallback(() => {
     if (!edges || edges.length === 0) return [];
-    
+
     // İlk edge'in source'u '1' ise 2. edge'den başla
     const filteredEdges = edges[0]?.source === '1' ? edges.slice(1) : edges;
-    
+
     const edgesData = filteredEdges.map(edge => ({
       from_node: edge.source,
       to_node: edge.target,
       condition_type: "success",
     }));
-    
+
     console.log('🔄 Converted edges data (filtered):', edgesData);
     return edgesData;
   }, [edges]);
@@ -80,7 +81,7 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
 
   // Workflow çalıştırma
   const handleRunWorkflow = async () => {
-              alert('Workflow çalışıyor, sonuçları ana sayfada görebilirsiniz...')
+    alert('Workflow çalışıyor, sonuçları ana sayfada görebilirsiniz...')
 
     /*if (!workflowData.nodes || workflowData.nodes.length === 0) {
       alert('Workflow verisi bulunamadı veya boş!');
@@ -92,10 +93,10 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
 
     try {
       console.log('🚀 Starting workflow execution...');
-      
+
       // Önce kaydet, sonra başlat
       const result = await apiService.executeWorkflow(workflowId);
-      
+
       setExecutionResult({
         success: true,
         workflow_id: result.workflow_id,
@@ -107,15 +108,15 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
       console.log('✅ Workflow execution result:', result);
     } catch (error) {
       console.error('❌ Workflow execution error:', error);
-      
+
       let errorMessage = 'Workflow çalıştırılırken hata oluştu!';
-      
+
       if (error.message.includes('HTTP error')) {
         errorMessage = `API Hatası: ${error.message}`;
       } else if (error.message.includes('fetch')) {
         errorMessage = 'Sunucuya bağlanılamıyor. Lütfen internet bağlantınızı kontrol edin.';
       }
-      
+
       setExecutionResult({
         success: false,
         error: errorMessage,
@@ -126,7 +127,7 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
     }
   };
 
- 
+
 
   // Sonuçları kapatma
   const handleCloseResults = () => {
@@ -141,14 +142,13 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
           onClick={handleRunWorkflow}
 
           disabled={isRunning || !nodes || nodes.length === 0}
-          className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
-            isRunning || !nodes || nodes.length === 0
+          className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${isRunning || !nodes || nodes.length === 0
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-green-600 text-white hover:bg-green-700'
-          }`}
+            }`}
           title={!nodes || nodes.length === 0 ? 'Workflow boş, çalıştırılamaz' : 'Workflow\'u çalıştır'}
         >
-          
+
           <span className="text-sm font-medium">
             {'Run'}
           </span>
@@ -162,15 +162,15 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
           className=" p-2 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
 
-        Workflow Name: {currentWorkflowName }
-          
+          Workflow Name: {currentWorkflowName}
+
         </text>
 
         <div className="h-6 w-px bg-gray-300"></div>
 
         {/* Export Button */}
-        <button 
-          className="p-2 hover:bg-gray-100 rounded-md transition-colors" 
+        <button
+          className="p-2 hover:bg-gray-100 rounded-md transition-colors"
           title="Export"
           disabled={!nodes || nodes.length === 0}
           onClick={handleExportWorkflow}
@@ -181,18 +181,18 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
         <div className="h-6 w-px bg-gray-300"></div>
 
         {/* Import Button */}
-        <button 
-          className="p-2 hover:bg-gray-100 rounded-md transition-colors" 
+        <button
+          className="p-2 hover:bg-gray-100 rounded-md transition-colors"
           title="Import"
         >
           <Upload className="w-4 h-4 text-gray-600" />
         </button>
 
-          <div className="h-6 w-px bg-gray-300"></div>
+        <div className="h-6 w-px bg-gray-300"></div>
 
         {/* Dashboard Button */}
         <button
-          className="p-2 hover:bg-gray-100 rounded-md transition-colors" 
+          className="p-2 hover:bg-gray-100 rounded-md transition-colors"
           title='Dashboard'
           onClick={goToDashboard}
 
