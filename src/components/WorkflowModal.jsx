@@ -4,6 +4,9 @@ import { apiService } from '../services/api';
 import ExecutionResults from './ExecutionResults';
 
 export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
+  // Workflow bilgisi local state
+  const [localWorkflow, setLocalWorkflow] = useState(workflow);
+
   const [executionHistory, setExecutionHistory] = useState([]);
   const [averageDuration, setAverageDuration] = useState('Bilinmiyor');
   const [lastExecutionDate, setLastExecutionDate] = useState('Bilinmiyor');
@@ -18,6 +21,13 @@ export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
 
   // Silme onayı için modal
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Düzenleme için state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(workflow?.name || '');
+  const [editDescription, setEditDescription] = useState(workflow?.description || '');
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState(null);
 
   const handleDeleteWorkflow = async () => {
     if (!workflow?.id || deleting) return;
@@ -43,6 +53,9 @@ export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
   useEffect(() => {
     if (isOpen && workflow) {
       fetchExecutionHistory();
+      setLocalWorkflow(workflow);
+      setEditName(workflow?.name || '');
+      setEditDescription(workflow?.description || '');
     }
   }, [isOpen, workflow]);
 
@@ -112,10 +125,47 @@ export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
         return 'bg-gray-100 text-gray-600';
     }
   };
+
+  // Eski edit butonu için fonksiyon (sadece onEdit'i çağırır)
   const handleEditClick = (e) => {
-    e.stopPropagation(); // Prevent card click event
+    e.stopPropagation();
     if (onEdit) {
       onEdit(workflow);
+    }
+  };
+
+  // Yeni düzenleme modalı için fonksiyonlar
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const handleOpenEditModal = () => {
+    setEditName(workflow?.name || '');
+    setEditDescription(workflow?.description || '');
+    setEditError(null);
+    setIsEditModalOpen(true);
+  };
+  const handleEditCancel = () => {
+    setIsEditModalOpen(false);
+    setEditError(null);
+  };
+  const handleEditSave = async () => {
+    if (!editName.trim()) {
+      setEditError('İsim boş olamaz');
+      return;
+    }
+    setEditLoading(true);
+    setEditError(null);
+    try {
+      await apiService.updateWorkflow(localWorkflow.id, {
+        name: editName,
+        description: editDescription,
+      });
+      // Local workflow bilgisini güncelle
+      setLocalWorkflow(prev => ({ ...prev, name: editName, description: editDescription }));
+      setIsEditModalOpen(false);
+    } catch (err) {
+      setEditError('Workflow güncellenirken hata oluştu');
+      console.error('Error updating workflow:', err);
+    } finally {
+      setEditLoading(false);
     }
   };
   return (
@@ -123,19 +173,28 @@ export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
       <div className="fixed inset-0 bg-gray-800/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[100vh] overflow-y-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-6 border-b border-gray-200">
-
-            {/* Başlık ve açıklama + Edit butonu */}
+            {/* Başlık ve açıklama*/}
             <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 w-full">
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900">{workflow.name}</h2>
-                <p className="text-gray-600 mt-1">{workflow.description}</p>
+                <div className="flex items-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mr-2">{localWorkflow?.name}</h2>
+                  {/* Icon button yanına */}
+                  <button
+                    onClick={handleOpenEditModal}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-all duration-200"
+                    title="Ad ve açıklamayı düzenle"
+                    style={{ lineHeight: 0 }}
+                  >
+                    <Edit className="w-5 h-5 text-blue-600" />
+                  </button>
+                </div>
+                <p className="text-gray-600 mt-1">{localWorkflow?.description}</p>
               </div>
-
-              {/* Edit butonu başlığın yanında */}
+              {/* Eski edit butonu başlığın yanında */}
               <button
                 onClick={handleEditClick}
                 className="mt-3 sm:mt-0 p-2  hover:bg-gray-100  rounded-full transition-all duration-200"
-                title="Düzenle"
+                title="Düzenle (onEdit)"
               >
                 <Edit className="w-5 h-5" />
               </button>
@@ -156,9 +215,6 @@ export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
             >
               <X className="w-6 h-6" />
             </button>
-
-
-
           </div>
 
 
@@ -195,7 +251,7 @@ export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
                   <Settings className="w-5 h-5 text-gray-500 mr-2" />
                   <span className="font-medium text-gray-900">Toplam Adım</span>
                 </div>
-                <p className="text-sm text-gray-600">{workflow.steps} adım</p>
+                <p className="text-sm text-gray-600">{localWorkflow?.steps} adım</p>
               </div>
             </div>
 
@@ -266,6 +322,48 @@ export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
           isOpen={showExecutionResults}
           onClose={handleCloseExecutionResults}
         />
+      )}
+
+      {/* Ad ve açıklama düzenleme modalı */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4">Workflow Adı ve Açıklamasını Düzenle</h3>
+            <input
+              type="text"
+              className="text-lg font-bold text-gray-900 border-b border-gray-300 focus:outline-none focus:border-blue-500 w-full mb-2"
+              value={editName}
+              onChange={e => setEditName(e.target.value)}
+              disabled={editLoading}
+              placeholder="Workflow adı"
+            />
+            <textarea
+              className="text-gray-600 mt-1 border-b border-gray-300 focus:outline-none focus:border-blue-500 w-full resize-none"
+              value={editDescription}
+              onChange={e => setEditDescription(e.target.value)}
+              disabled={editLoading}
+              placeholder="Açıklama"
+              rows={2}
+            />
+            {editError && <div className="text-red-600 text-sm mt-2">{editError}</div>}
+            <div className="flex justify-end space-x-2 mt-4">
+              <button
+                onClick={handleEditSave}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                disabled={editLoading}
+              >
+                {editLoading ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+              <button
+                onClick={handleEditCancel}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                disabled={editLoading}
+              >
+                İptal
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Silme onay modalı */}

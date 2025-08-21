@@ -256,8 +256,8 @@ export const apiService = {
   // Var olan bir workflow'u günceller
   async updateWorkflow(workflowId, workflowData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}`, {
-        method: 'PUT',
+      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/update`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },

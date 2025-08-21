@@ -77,17 +77,10 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
     return edgesData;
   }, [edges]);
 
-  // Workflow verisini toplama
 
   // Workflow çalıştırma
   const handleRunWorkflow = async () => {
     alert('Workflow çalışıyor, sonuçları ana sayfada görebilirsiniz...')
-
-    /*if (!workflowData.nodes || workflowData.nodes.length === 0) {
-      alert('Workflow verisi bulunamadı veya boş!');
-      return;
-    }*/
-
     setIsRunning(true);
     setExecutionResult(null);
 
