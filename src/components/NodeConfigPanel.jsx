@@ -120,7 +120,7 @@ const NodeConfigPanel = ({ node, fromSelectedNodes, onClose, onUpdateNode, onDel
         n.output_params && typeof n.output_params === 'object'
           ? Object.entries(n.output_params).map(([key, param]) => ({
               label: `${n.name} - ${key}`,
-              value: `{{${n.id}.${key}}}`,
+              value: `{{${n.name}.${key}}}`,
               type: param.type,
               description: param.description || '',
             }))
