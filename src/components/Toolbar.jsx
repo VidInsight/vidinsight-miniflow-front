@@ -58,7 +58,10 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
 
   {/*Dashboard yönlendirme */ }
   const goToDashboard = () => {
+
     navigate('/dashboard'); // Dashboard sayfasının route'u
+    window.location.reload();// Sayfayı yenile
+
   };
   // Edges verisini API formatına çevirme - ilk edge'i atla (source === '1' ise)
   const getEdgesData = useCallback(() => {

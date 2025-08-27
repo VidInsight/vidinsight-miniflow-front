@@ -41,6 +41,7 @@ export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
       await apiService.deleteWorkflow(workflow.id);
       setShowDeleteConfirm(false);
       if (onClose) onClose();
+      window.location.reload();// Sayfayı yenile
     } catch (err) {
       setDeleteError('Workflow silinirken hata oluştu');
       console.error('Error deleting workflow:', err);
