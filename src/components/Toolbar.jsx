@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Download, Upload, House } from 'lucide-react';
+import { Download, Upload, House, FolderUp } from 'lucide-react';
 import ExecutionResults from './ExecutionResults';
 import { apiService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +12,9 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
 
   // Export workflow as JSON
   const handleExportWorkflow = useCallback(() => {
-    if (!nodes || nodes.length === 0) return;
+    if (!nodes || nodes.length === 0){
+      alert('Boş workflow dışa aktarılamaz!');
+     return;}
     const workflowJson = {
       workflowId,
       workflowName: currentWorkflowName,
@@ -139,8 +141,8 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
 
           disabled={isRunning || !nodes || nodes.length === 0}
           className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${isRunning || !nodes || nodes.length === 0
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-green-600 text-white hover:bg-green-700'
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-green-600 text-white hover:bg-green-700'
             }`}
           title={!nodes || nodes.length === 0 ? 'Workflow boş, çalıştırılamaz' : 'Workflow\'u çalıştır'}
         >
@@ -168,8 +170,7 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
         <button
           className="p-2 hover:bg-gray-100 rounded-md transition-colors"
           title="Export"
-          disabled={!nodes || nodes.length === 0}
-          onClick={handleExportWorkflow}
+           onClick={handleExportWorkflow}
         >
           <Download className="w-4 h-4 text-gray-600" />
         </button>
@@ -195,6 +196,21 @@ const Toolbar = ({ nodes, edges, workflowName, workflowId }) => {
         >
           <House className="w-4 h-4 text-gray-600" />
         </button>
+
+
+        <div className="h-6 w-px bg-gray-300"></div>
+        
+        {/* Upload File Button */}
+        <button
+          className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+          title='Upload'
+          onClick={() => alert('Bu özellik yakında gelecek!')}
+        >
+          <FolderUp className="w-4 h-4 text-gray-600" />
+
+        </button>
+
+
       </div>
 
       {/* Execution Results Modal */}

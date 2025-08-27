@@ -23,7 +23,6 @@ export default function WorkflowModal({ workflow, isOpen, onClose, onEdit }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Düzenleme için state
-  const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(workflow?.name || '');
   const [editDescription, setEditDescription] = useState(workflow?.description || '');
   const [editLoading, setEditLoading] = useState(false);
