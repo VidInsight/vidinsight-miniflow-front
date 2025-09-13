@@ -1148,4 +1148,142 @@ export const apiService = {
     if (diffMins < 60) return `${diffMins}s ${diffSecs % 60}ms`;
     return `${diffMins}m ${diffSecs % 60}s`;
   },
+  
+  // ✅ Dosya yükleme fonksiyonu
+  async uploadFile(file, isTemporary = true) {
+    try {
+      console.log('📤 Uploading file:', file.name, 'is_temporary:', isTemporary);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('is_temporary', isTemporary);
+      
+      const response = await fetch(`${API_BASE_URL}/files/`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ File uploaded successfully:', data);
+      
+      if (data.success && data.data) {
+        return {
+          success: true,
+          file: data.data,
+          message: 'Dosya başarıyla yüklendi',
+          data: data
+        };
+      } else {
+        throw new Error('Invalid API response format');
+      }
+    } catch (error) {
+      console.error('❌ Error uploading file:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Dosya listesini getir
+  async getFiles() {
+    try {
+      console.log('📋 Fetching files list');
+      
+      const response = await fetch(`${API_BASE_URL}/files/`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Files list fetched:', data);
+      
+      if (data.success && data.data) {
+        return {
+          success: true,
+          files: data.data,
+          message: 'Dosya listesi başarıyla getirildi',
+          data: data
+        };
+      } else {
+        throw new Error('Invalid API response format');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching files:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Dosya silme fonksiyonu
+  async deleteFile(fileId) {
+    try {
+      console.log('🗑️ Deleting file with ID:', fileId);
+      
+      const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ File deleted successfully:', data);
+      
+      return {
+        success: true,
+        message: 'Dosya başarıyla silindi',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error deleting file:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Dosya durumunu güncelle (temporary/permanent)
+  async updateFileStatus(fileId, isTemporary) {
+    try {
+      console.log('🔄 Updating file status:', fileId, 'is_temporary:', isTemporary);
+      
+      const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          is_temporary: isTemporary
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ File status updated successfully:', data);
+      
+      return {
+        success: true,
+        message: 'Dosya durumu başarıyla güncellendi',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error updating file status:', error);
+      throw error;
+    }
+  },
 };

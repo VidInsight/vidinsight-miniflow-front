@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Workflow, TrendingUp, Clock, AlertCircle, RefreshCw, Plus } from 'lucide-react';
-import WorkflowCard from './WorkflowCard';
-import StatsCard from './StatsCard';
-import WorkflowModal from './WorkflowModal';
-import CreateWorkflowModal from './CreateWorkflowModal'; // ✅ Yeni modal'ı import et
+import WorkflowCard from '../components/WorkflowCard';
+import StatsCard from '../components/StatsCard';
+import WorkflowModal from '../components/WorkflowModal';
+import CreateWorkflowModal from '../components/CreateWorkflowModal'; // ✅ Yeni modal'ı import et
 import { useWorkflows } from '../App';
-import logo from '../assets/vi.png';
-import Sidebar from './SidebarMenu';
-function Dashboard() {
+  
+function Workflows() {
   const navigate = useNavigate();
   const { workflows, loading, error, refreshWorkflows } = useWorkflows();
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,7 +73,8 @@ function Dashboard() {
   };
 
 
-  return (
+ 
+     return (
   <div className="min-h-screen bg-gray-50 flex">
      
     {/* Sağdaki içerik alanı */}
@@ -297,13 +297,6 @@ function Dashboard() {
     />
   </div>
 );
-
 }
 
-export default Dashboard
-
-  // Workflow düzenleme fonksiyonu
-  function handleEditWorkflow(workflow) {
-    // Burada düzenleme modalı açılabilir veya başka bir işlem yapılabilir
-    alert(`Düzenleme: ${workflow.name}`);
-  }
+export default Workflows;

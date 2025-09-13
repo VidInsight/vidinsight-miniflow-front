@@ -172,16 +172,43 @@ function App() {
   // Context value'yu return et
   const value = contextValue;
 
+  // Import new pages
+  const Workflows = React.lazy(() => import('./pages/Workflows'));
+  const Scripts = React.lazy(() => import('./pages/Scripts'));
+  const Variables = React.lazy(() => import('./pages/Variables'));
+  const Monitoring = React.lazy(() => import('./pages/Monitoring'));
+  const FileUpload = React.lazy(() => import('./pages/FileUpload'));
+
+  // Import SidebarMenu
+  const SidebarMenu = React.lazy(() => import('./components/SidebarMenu'));
+
+  // Layout for pages with sidebar
+  function MainLayout({ children }) {
+    return (
+      <div className="h-screen bg-gray-50 flex">
+        <React.Suspense fallback={<div className="p-8">Loading sidebar...</div>}>
+          <SidebarMenu />
+        </React.Suspense>
+        <div className="flex-1 overflow-auto">{children}</div>
+      </div>
+    );
+  }
+
   return (
     <WorkflowContext.Provider value={value}>
       <Router>
-        <div className="h-screen bg-gray-50">
+        <React.Suspense fallback={<div className="p-8">Loading...</div>}>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<MainLayout><Dashboard /></MainLayout>} />
+            <Route path="/workflows" element={<MainLayout><Workflows /></MainLayout>} />
+            <Route path="/scripts" element={<MainLayout><Scripts /></MainLayout>} />
+            <Route path="/variables" element={<MainLayout><Variables /></MainLayout>} />
+            <Route path="/monitoring" element={<MainLayout><Monitoring /></MainLayout>} />
+            <Route path="/file-upload" element={<MainLayout><FileUpload /></MainLayout>} />
             <Route path="/workflow-builder/:workflowId" element={<WorkflowBuilder />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </div>
+        </React.Suspense>
       </Router>
     </WorkflowContext.Provider>
   );

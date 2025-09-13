@@ -48,9 +48,17 @@ export default function WorkflowCard({ workflow, onClick, onEdit }) {
     }
   };
 
+  // Tüm metinler için kısaltma
+  const truncate = (str, n) => str && str.length > n ? str.slice(0, n) + '...' : str;
+  const shortName = truncate(workflow.name, 28);
+  const shortDesc = truncate(workflow.description, 60);
+  const shortStatus = truncate(workflow.status.charAt(0).toUpperCase() + workflow.status.slice(1), 16);
+  const shortNodeCount = truncate(`Node Sayısı : ${workflow.steps}`, 16);
+
   return (
     <div 
       className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-gray-300 relative"
+      style={{ minHeight: '180px', height: '160px', minWidth: '300px', maxWidth: '300px', width: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
       onClick={() => onClick(workflow)}
     >
       {/* Edit Button */}
@@ -65,26 +73,30 @@ export default function WorkflowCard({ workflow, onClick, onEdit }) {
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-            {workflow.name}
+            {shortName}
           </h3>
-          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-            {workflow.description}
+          <p className="text-sm text-gray-600 mt-1">
+            {shortDesc}
           </p>
-        </div>
-        <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${config.color}`}>
-          <div className={`w-2 h-2 rounded-full ${config.dot} mr-2`}></div>
-          {workflow.status.charAt(0).toUpperCase() + workflow.status.slice(1)}
         </div>
       </div>
 
       <div className="space-y-3">
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Toplam Node Sayısı : {workflow.steps}</span>
-            
+            <span className="text-gray-600">{shortNodeCount}</span>
           </div>
-          
         </div>
+      </div>
+      {/* Sağ alt köşede durum bilgisi */}
+      <div
+        className={`absolute bottom-4 right-4 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${config.color}`}
+        style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+      >
+        <div className={`w-2 h-2 rounded-full ${config.dot} mr-2`}></div>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block', verticalAlign: 'middle', maxWidth: '70px' }}>
+          {shortStatus}
+        </span>
       </div>
     </div>
   );
