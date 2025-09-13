@@ -56,48 +56,73 @@ export default function WorkflowCard({ workflow, onClick, onEdit }) {
   const shortNodeCount = truncate(`Node Sayısı : ${workflow.steps}`, 16);
 
   return (
-    <div 
-      className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-gray-300 relative"
-      style={{ minHeight: '180px', height: '160px', minWidth: '300px', maxWidth: '300px', width: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-      onClick={() => onClick(workflow)}
-    >
-      {/* Edit Button */}
-      <button
-        onClick={handleEditClick}
-        className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-        title="Düzenle"
-      >
-        <Edit className="w-4 h-4" />
-      </button>
+  <div
+  className="bg-black rounded-2xl border border-gray-700 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer group relative"
+  style={{
+    minHeight: '180px',
+    height: '160px',
+    minWidth: '300px',
+    maxWidth: '300px',
+    width: '300px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between'
+  }}
+  onClick={() => onClick(workflow)}
+>
+  {/* Edit Button */}
+  <button
+    onClick={handleEditClick}
+    className="absolute top-4 right-4 p-2 bg-gray-700 hover:bg-purple-600 text-gray-300 hover:text-white rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+    title="Düzenle"
+  >
+    <Edit className="w-4 h-4" />
+  </button>
 
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-            {shortName}
-          </h3>
-          <p className="text-sm text-gray-600 mt-1">
-            {shortDesc}
-          </p>
-        </div>
-      </div>
+  <div className="flex items-start justify-between mb-4">
+    <div className="flex-1">
+      <h3 className="text-lg font-semibold text-gray-200 group-hover:text-purple-400 transition-colors">
+        {shortName}
+      </h3>
+      <p className="text-sm text-gray-400 mt-1">
+        {shortDesc}
+      </p>
+    </div>
+  </div>
 
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">{shortNodeCount}</span>
-          </div>
-        </div>
-      </div>
-      {/* Sağ alt köşede durum bilgisi */}
-      <div
-        className={`absolute bottom-4 right-4 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${config.color}`}
-        style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-      >
-        <div className={`w-2 h-2 rounded-full ${config.dot} mr-2`}></div>
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block', verticalAlign: 'middle', maxWidth: '70px' }}>
-          {shortStatus}
-        </span>
+  <div className="space-y-3">
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm text-gray-400">
+        <span>{shortNodeCount}</span>
       </div>
     </div>
+  </div>
+
+  {/* Sağ alt köşede durum bilgisi */}
+  <div
+    className={`absolute bottom-4 right-4 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${config.color} bg-gray-700 border-gray-600`}
+    style={{
+      maxWidth: '110px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
+    }}
+  >
+    <div className={`w-2 h-2 rounded-full ${config.dot} mr-2`}></div>
+    <span
+      style={{
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        display: 'inline-block',
+        verticalAlign: 'middle',
+        maxWidth: '70px'
+      }}
+    >
+      {shortStatus}
+    </span>
+  </div>
+</div>
+
   );
 }
