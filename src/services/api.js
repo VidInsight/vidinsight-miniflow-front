@@ -1,5 +1,5 @@
 // Gerçek API servisi: Tüm istekler bu base URL üzerinden yapılır
-const API_BASE_URL = 'https://n8n.vidinsight.com.tr/api/v1/bff';
+const API_BASE_URL = 'https://n8n.vidinsight.com.tr/api/bff';
 // API fonksiyonları
 // API ile ilgili tüm fonksiyonları içeren servis nesnesi
 export const apiService = {
@@ -13,7 +13,7 @@ export const apiService = {
       }
       const data = await response.json();
       
-      if (data.status && data.data) {
+      if (data.success && data.data) {
         return this.transformWorkflowsToCards(data.data);
       } else {
         throw new Error('Invalid API response format');
@@ -29,8 +29,8 @@ export const apiService = {
     async deleteWorkflow(workflowId) {
       try {
         console.log('🗑️ Deleting workflow with ID:', workflowId);
-        const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/delete`, {
-          method: 'POST',
+        const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}`, {
+          method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           }
@@ -85,7 +85,7 @@ export const apiService = {
       'error': 'failed',
       'paused': 'pending'
     };
-    return statusMap[status] || 'pending';
+    return statusMap[status] || 'running';
   },
 
   // Tarih formatla
