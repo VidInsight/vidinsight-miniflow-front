@@ -16,6 +16,7 @@ import { useWorkflows } from '../App';
 import logo from '../assets/vi.png';
 
 const navigation = [
+    { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Workflows", href: "/workflows", icon: Workflow },
     { name: "Scripts", href: "/scripts", icon: Code },
     { name: "Variables", href: "/variables", icon: Settings2 },
@@ -40,11 +41,16 @@ export default function Sidebar() {
 <div className="flex flex-col h-full bg-black text-gray-200 w-64 shadow-xl p-4 border border-gray-700">
             {/* Logo */}
             <div className="flex items-center justify-center mb-8">
-                <img
-                    src={logo}
-                    alt="Logo"
-                    className="h-16 w-auto object-contain"
-                />
+                <button
+                    onClick={() => navigate('/')}
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        className="h-16 w-auto object-contain"
+                    />
+                </button>
             </div>
 
             {/* New Workflow Button */}

@@ -1614,5 +1614,33 @@ export const apiService = {
       throw error;
     }
   },
+  async getExecutions() {
+    try {
+      console.log('📋 Fetching executions list');
+      
+      const response = await fetch(`${API_BASE_URL}/executions/`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Executions list fetched:', data);
+      
+      return {
+        success: true,
+        executions: data.executions || [],
+        total_count: data.total_count || 0,
+        page_info: data.page_info || {},
+        message: 'Executions listesi başarıyla getirildi',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error fetching executions:', error);
+      throw error;
+    }
+  },
 
 };
