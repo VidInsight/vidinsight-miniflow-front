@@ -1286,4 +1286,333 @@ export const apiService = {
       throw error;
     }
   },
+  
+  // ✅ Script oluştur
+  async createScript(scriptData) {
+    try {
+      console.log('🔄 Creating script with data:', scriptData);
+      
+      const response = await fetch(`${API_BASE_URL}/scripts/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(scriptData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Script created successfully:', data);
+      
+      return {
+        success: true,
+        script: data.data,
+        message: 'Script başarıyla oluşturuldu',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error creating script:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Script listesini getir
+  async getScripts() {
+    try {
+      console.log('📋 Fetching scripts list');
+      
+      const response = await fetch(`${API_BASE_URL}/scripts/`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Scripts list fetched:', data);
+      
+      if (data.success && data.data) {
+        return {
+          success: true,
+          scripts: data.data,
+          message: 'Script listesi başarıyla getirildi',
+          data: data
+        };
+      } else {
+        throw new Error('Invalid API response format');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching scripts:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Script sil
+  async deleteScript(scriptId) {
+    try {
+      console.log('🗑️ Deleting script with ID:', scriptId);
+      
+      const response = await fetch(`${API_BASE_URL}/scripts/${scriptId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Script deleted successfully:', data);
+      
+      return {
+        success: true,
+        message: 'Script başarıyla silindi',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error deleting script:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Script güncelle
+  async updateScript(scriptId, scriptData) {
+    try {
+      console.log('🔄 Updating script with ID:', scriptId, 'data:', scriptData);
+      
+      const response = await fetch(`${API_BASE_URL}/scripts/${scriptId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(scriptData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Script updated successfully:', data);
+      
+      return {
+        success: true,
+        script: data.data,
+        message: 'Script başarıyla güncellendi',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error updating script:', error);
+      throw error;
+    }
+  },
+
+
+
+  // ✅ Environment Variables - Değişkenleri getir
+  async getEnvironmentVariables() {
+    try {
+      console.log('📋 Fetching environment variables');
+      
+      const response = await fetch(`${API_BASE_URL}/envar/`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Environment variables fetched:', data);
+      
+      if (data.success && data.data) {
+        // API'den gelen veriyi component formatına dönüştür
+        const transformedVariables = data.data.map(variable => ({
+          id: variable.id,
+          name: variable.name,
+          value: variable.value,
+          description: variable.description || '',
+          type: variable.variable_type?.toUpperCase() || 'STRING',
+          scope: variable.scope?.toUpperCase() || 'USER',
+          last_accessed_at: variable.last_accessed_at,
+          access_count: variable.access_count || 0,
+          created_at: variable.created_at,
+          updated_at: variable.updated_at,
+          last_modified_by: variable.last_modified_by
+        }));
+        
+        return {
+          success: true,
+          variables: transformedVariables,
+          message: 'Environment variables başarıyla getirildi',
+          data: data
+        };
+      } else {
+        throw new Error('Invalid API response format');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching environment variables:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Environment Variables - Değişkenleri getir
+  async getEnvironmentVariables() {
+    try {
+      console.log('📋 Fetching environment variables');
+      
+      const response = await fetch(`${API_BASE_URL}/envar/`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Environment variables fetched:', data);
+      
+      if (data.success && data.data) {
+        // API'den gelen veriyi component formatına dönüştür
+        const transformedVariables = data.data.map(variable => ({
+          id: variable.id,
+          name: variable.name,
+          value: variable.value,
+          description: variable.description || '',
+          type: variable.variable_type?.toUpperCase() || 'STRING',
+          scope: variable.scope?.toUpperCase() || 'USER',
+          last_accessed_at: variable.last_accessed_at,
+          access_count: variable.access_count || 0,
+          created_at: variable.created_at,
+          updated_at: variable.updated_at,
+          last_modified_by: variable.last_modified_by
+        }));
+        
+        return {
+          success: true,
+          variables: transformedVariables,
+          message: 'Environment variables başarıyla getirildi',
+          data: data
+        };
+      } else {
+        throw new Error('Invalid API response format');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching environment variables:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Environment Variable oluştur
+  async createEnvironmentVariable(variableData) {
+    try {
+      console.log('🔄 Creating environment variable with data:', variableData);
+      
+      const response = await fetch(`${API_BASE_URL}/envar/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(variableData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Environment variable created successfully:', data);
+      
+      return {
+        success: true,
+        variable: data.data,
+        message: 'Environment variable başarıyla oluşturuldu',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error creating environment variable:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Environment Variable güncelle
+  async updateEnvironmentVariable(variableId, variableData) {
+    try {
+      console.log('🔄 Updating environment variable with ID:', variableId, 'data:', variableData);
+      
+      const response = await fetch(`${API_BASE_URL}/envar/${variableId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(variableData)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Environment variable updated successfully:', data);
+      
+      return {
+        success: true,
+        variable: data.data,
+        message: 'Environment variable başarıyla güncellendi',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error updating environment variable:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Environment Variable sil
+  async deleteEnvironmentVariable(variableId) {
+    try {
+      console.log('🗑️ Deleting environment variable with ID:', variableId);
+      
+      const response = await fetch(`${API_BASE_URL}/envar/${variableId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Environment variable deleted successfully:', data);
+      
+      return {
+        success: true,
+        message: 'Environment variable başarıyla silindi',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error deleting environment variable:', error);
+      throw error;
+    }
+  },
+
 };

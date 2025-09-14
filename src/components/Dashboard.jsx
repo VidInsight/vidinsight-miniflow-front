@@ -142,16 +142,14 @@ function Dashboard() {
             title="Tamamlanan Workflow"
             value={stats.completed}
             icon={Clock}
-            color="bg-purple-500"
-            change="+15 bugün"
+             change="+15 bugün"
             changeType="positive"
           />
           <StatsCard
             title="Başarısız Workflow"
             value={stats.failed}
             icon={AlertCircle}
-            color="bg-red-500"
-            change="-2 bu hafta"
+             change="-2 bu hafta"
             changeType="positive"
           />
         </div>
