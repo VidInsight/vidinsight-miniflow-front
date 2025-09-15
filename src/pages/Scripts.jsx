@@ -12,7 +12,9 @@ import {
   BarChart3,
   CheckCircle2,
   Tag,
+  AlertCircle,
 } from "lucide-react";
+import { toast } from 'react-toastify';
 import CreateScriptModal from "../components/CreateScriptModal";
 import { apiService } from "../services/api";
 
@@ -65,6 +67,8 @@ export default function Scripts() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [scriptToDelete, setScriptToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadScripts = async () => {
     setLoading(true);
@@ -101,6 +105,31 @@ export default function Scripts() {
     console.log('✅ New script created:', newScript);
     // Script listesini yeniden yükle
     loadScripts();
+  };
+
+  const handleDeleteClick = (script) => {
+    setScriptToDelete(script);
+  };
+
+  const confirmDelete = async () => {
+    if (!scriptToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await apiService.deleteScript(scriptToDelete.id);
+      toast.success('Script başarıyla silindi');
+      loadScripts(); // Listeyi yenile
+    } catch (error) {
+      console.error('Error deleting script:', error);
+      toast.error('Script silinirken bir hata oluştu: ' + (error.message || 'Bilinmeyen hata'));
+    } finally {
+      setScriptToDelete(null);
+      setIsDeleting(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setScriptToDelete(null);
   };
 
   return (
@@ -234,17 +263,15 @@ export default function Scripts() {
                     <td className="p-3 text-sm text-gray-400">{formatDate(s.updated_at)}</td>
                     <td className="p-3 text-right">
                       <div className="flex gap-1 justify-end">
+                        <button 
+                          onClick={() => handleDeleteClick(s)}
+                          className="p-1.5 rounded-full hover:bg-gray-700 text-gray-400 hover:text-red-400 transition"
+                          title="Script'i Sil"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                         <button className="p-2 hover:bg-purple-600/20 rounded-lg transition">
                           <Play className="w-4 h-4 text-purple-400" />
-                        </button>
-                        <button className="p-2 hover:bg-purple-600/20 rounded-lg transition">
-                          <BarChart3 className="w-4 h-4 text-indigo-400" />
-                        </button>
-                        <button className="p-2 hover:bg-purple-600/20 rounded-lg transition">
-                          <Edit className="w-4 h-4 text-gray-300" />
-                        </button>
-                        <button className="p-2 hover:bg-red-600/20 rounded-lg transition">
-                          <Trash2 className="w-4 h-4 text-red-400" />
                         </button>
                       </div>
                     </td>
@@ -261,6 +288,72 @@ export default function Scripts() {
           onClose={() => setIsCreateModalOpen(false)}
           onScriptCreated={handleScriptCreated}
         />
+
+        {/* Delete Confirmation Dialog */}
+        {scriptToDelete && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md">
+              <div className="flex items-center gap-3 mb-4">
+                <AlertCircle className="w-6 h-6 text-red-500" />
+                <h3 className="text-xl font-semibold text-white">Script'i Sil</h3>
+              </div>
+              <p className="text-gray-300 mb-6">
+                <span className="font-medium">{scriptToDelete?.name}</span> adlı script'i silmek istediğinizden emin misiniz?
+                Bu işlem geri alınamaz.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={cancelDelete}
+                  disabled={isDeleting}
+                  className="px-4 py-2 rounded-lg border border-gray-600 text-gray-200 hover:bg-gray-700 disabled:opacity-50"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={isDeleting}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isDeleting ? 'Siliniyor...' : 'Sil'}
+                  {isDeleting ? <Clock className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        {scriptToDelete && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md">
+              <div className="flex items-center gap-3 mb-4">
+                <AlertCircle className="w-6 h-6 text-red-500" />
+                <h3 className="text-xl font-semibold text-white">Script'i Sil</h3>
+              </div>
+              <p className="text-gray-300 mb-6">
+                <span className="font-medium">{scriptToDelete?.name}</span> adlı script'i silmek istediğinizden emin misiniz?
+                Bu işlem geri alınamaz.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={cancelDelete}
+                  disabled={isDeleting}
+                  className="px-4 py-2 rounded-lg border border-gray-600 text-gray-200 hover:bg-gray-700 disabled:opacity-50"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={isDeleting}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isDeleting ? 'Siliniyor...' : 'Sil'}
+                  {isDeleting ? <Clock className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

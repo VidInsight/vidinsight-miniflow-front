@@ -3,6 +3,23 @@ const API_BASE_URL = 'https://n8n.vidinsight.com.tr/api/bff';
 // API fonksiyonları
 // API ile ilgili tüm fonksiyonları içeren servis nesnesi
 export const apiService = {
+  // Genel yardımcılar: API response normalizasyonu
+  extractData(json) {
+    if (json == null) return null;
+    if (typeof json === 'object' && 'data' in json && json.data !== undefined) return json.data;
+    return json;
+  },
+  extractList(maybeList, preferredKeys = []) {
+    if (Array.isArray(maybeList)) return maybeList;
+    if (!maybeList || typeof maybeList !== 'object') return [];
+    const defaultKeys = ['items', 'data', 'results', 'workflows', 'executions', 'files', 'variables', 'scripts'];
+    const keysToTry = [...preferredKeys, ...defaultKeys];
+    for (const key of keysToTry) {
+      if (Array.isArray(maybeList[key])) return maybeList[key];
+    }
+    return [];
+  },
+
   // Workflow listesini getir
   // Tüm workflow'ları API'den çeker ve kart formatına dönüştürür
   async getWorkflows() {
@@ -13,8 +30,9 @@ export const apiService = {
       }
       const data = await response.json();
       
-      if (data.success && data.data) {
-        return this.transformWorkflowsToCards(data.data);
+      if (data && (data.success === undefined || data.success === true)) {
+        const payload = this.extractData(data);
+        return this.transformWorkflowsToCards(payload);
       } else {
         throw new Error('Invalid API response format');
       }
@@ -58,7 +76,10 @@ export const apiService = {
   // Workflow verilerini kart formatına dönüştür
   // API'den gelen workflow verisini dashboard'da kullanılacak kart formatına dönüştürür
   transformWorkflowsToCards(workflows) {
-    return workflows.map(workflow => ({
+    // Bilinen liste alanlarını kontrol et
+    const list = this.extractList(workflows, ['workflows']);
+
+    return list.map(workflow => ({
       id: workflow.id,
       name: workflow.name,
       status: this.mapWorkflowStatus(workflow.status),
@@ -286,8 +307,57 @@ export const apiService = {
       }
       const data = await response.json();
       
+      const payload = this.extractData(data);
+      const list = this.extractList(payload, ['scripts']);
       // API response'unu node kategorilerine dönüştür
-      return this.transformScriptsToNodeCategories(data.data);
+      return this.transformScriptsToNodeCategories(list);
+    } catch (error) {
+      console.error('Error fetching scripts:', error);
+      throw error;
+    }
+  },
+
+  // Script silme işlemi
+  async deleteScript(scriptId) {
+    try {
+      console.log('🗑️ Deleting script with ID:', scriptId);
+      const response = await fetch(`${API_BASE_URL}/scripts/${scriptId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Script deleted successfully:', data);
+      return {
+        success: true,
+        message: 'Script başarıyla silindi',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error deleting script:', error);
+      throw error;
+    }
+  },
+
+  // Scripts listesi (Scripts sayfası için basit liste döner)
+  async getScripts() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/scripts/`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      const payload = this.extractData(data);
+      const scripts = this.extractList(payload, ['scripts']);
+      return { success: true, scripts };
     } catch (error) {
       console.error('Error fetching scripts:', error);
       throw error;
@@ -411,7 +481,9 @@ export const apiService = {
       }
       const data = await response.json();
       
-      const script = data.scripts.find(s => s.script_id === nodeId);
+      const payload = this.extractData(data);
+      const scripts = this.extractList(payload, ['scripts']);
+      const script = scripts.find(s => s.script_id === nodeId || s.id === nodeId);
       if (!script) {
         throw new Error('Script not found');
       }
@@ -589,7 +661,8 @@ export const apiService = {
       console.log('✅ Workflow details fetched:', data);
       
       // API'den gelen veriyi React Flow formatına dönüştür
-      const transformedData = this.transformWorkflowToReactFlow(data.data);
+      const payload = this.extractData(data);
+      const transformedData = this.transformWorkflowToReactFlow(payload);
       
       return {
         success: true,
@@ -920,9 +993,11 @@ export const apiService = {
       const data = await response.json();
       console.log('✅ Execution history fetched:', data);
       
-      if (data.status && data.data) {
+      const payload = this.extractData(data);
+      const list = this.extractList(payload, ['executions', 'data']);
+      if (Array.isArray(list)) {
         // Tarih bazında sırala (en güncel önce)
-        const sortedExecutions = data.data.sort((a, b) => {
+        const sortedExecutions = list.sort((a, b) => {
           const dateA = new Date(a.started_at);
           const dateB = new Date(b.started_at);
           return dateB - dateA; // Azalan sıralama (en güncel önce)
@@ -951,7 +1026,7 @@ export const apiService = {
           executions: executions,
           average_duration: averageDuration,
           last_execution_date: lastExecutionDate,
-          total_count: data.total_count,
+          total_count: data.total_count || payload?.total_count || executions.length,
           data: data
         };
       } else {
@@ -1093,30 +1168,34 @@ export const apiService = {
       const data = await response.json();
       console.log('✅ Execution results fetched:', data);
       
-      if (data.status) {
+      const payload = this.extractData(data) || {};
+      const results = payload.results || data.results;
+      const meta = payload.data || payload;
+      const executionStatus = meta.execution_status || payload.execution_status;
+      
+      if (data.status === undefined || data.status) {
         // Başarısız execution'lar için farklı veri yapısı
-        if (data.data.execution_status === 'ExecutionStatus.FAILED' || 
-            data.data.execution_status === 'FAILED') {
+        if (executionStatus === 'ExecutionStatus.FAILED' || executionStatus === 'FAILED') {
           return {
             success: true,
-            execution_id: data.data.execution_id,
-            execution_status: data.data.execution_status,
-            results: data.results, // Basit results objesi
+            execution_id: meta.execution_id,
+            execution_status: executionStatus,
+            results: results, // Basit results objesi
             data: data
           };
         }
         
         // Başarılı execution'lar için detaylı veri yapısı
-        if (data.results && data.results.summary) {
+        if (results && results.summary) {
           return {
             success: true,
-            execution_id: data.data.execution_id,
-            execution_status: data.data.execution_status,
-            summary: data.results.summary,
-            node_results: data.results.node_results,
-            execution_flow: data.results.execution_flow,
-            total_nodes: data.results.total_nodes,
-            consolidated_at: data.results.consolidated_at,
+            execution_id: meta.execution_id,
+            execution_status: executionStatus,
+            summary: results.summary,
+            node_results: results.node_results,
+            execution_flow: results.execution_flow,
+            total_nodes: results.total_nodes,
+            consolidated_at: results.consolidated_at,
             data: data
           };
         }
@@ -1204,16 +1283,14 @@ export const apiService = {
       const data = await response.json();
       console.log('✅ Files list fetched:', data);
       
-      if (data.success && data.data) {
-        return {
-          success: true,
-          files: data.data,
-          message: 'Dosya listesi başarıyla getirildi',
-          data: data
-        };
-      } else {
-        throw new Error('Invalid API response format');
-      }
+      const payload = this.extractData(data);
+      const files = this.extractList(payload, ['files', 'data']);
+      return {
+        success: true,
+        files: files,
+        message: 'Dosya listesi başarıyla getirildi',
+        data: data
+      };
     } catch (error) {
       console.error('❌ Error fetching files:', error);
       throw error;
@@ -1286,140 +1363,6 @@ export const apiService = {
       throw error;
     }
   },
-  
-  // ✅ Script oluştur
-  async createScript(scriptData) {
-    try {
-      console.log('🔄 Creating script with data:', scriptData);
-      
-      const response = await fetch(`${API_BASE_URL}/scripts/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(scriptData)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ Script created successfully:', data);
-      
-      return {
-        success: true,
-        script: data.data,
-        message: 'Script başarıyla oluşturuldu',
-        data: data
-      };
-    } catch (error) {
-      console.error('❌ Error creating script:', error);
-      throw error;
-    }
-  },
-
-  // ✅ Script listesini getir
-  async getScripts() {
-    try {
-      console.log('📋 Fetching scripts list');
-      
-      const response = await fetch(`${API_BASE_URL}/scripts/`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ Scripts list fetched:', data);
-      
-      if (data.success && data.data) {
-        return {
-          success: true,
-          scripts: data.data,
-          message: 'Script listesi başarıyla getirildi',
-          data: data
-        };
-      } else {
-        throw new Error('Invalid API response format');
-      }
-    } catch (error) {
-      console.error('❌ Error fetching scripts:', error);
-      throw error;
-    }
-  },
-
-  // ✅ Script sil
-  async deleteScript(scriptId) {
-    try {
-      console.log('🗑️ Deleting script with ID:', scriptId);
-      
-      const response = await fetch(`${API_BASE_URL}/scripts/${scriptId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ Script deleted successfully:', data);
-      
-      return {
-        success: true,
-        message: 'Script başarıyla silindi',
-        data: data
-      };
-    } catch (error) {
-      console.error('❌ Error deleting script:', error);
-      throw error;
-    }
-  },
-
-  // ✅ Script güncelle
-  async updateScript(scriptId, scriptData) {
-    try {
-      console.log('🔄 Updating script with ID:', scriptId, 'data:', scriptData);
-      
-      const response = await fetch(`${API_BASE_URL}/scripts/${scriptId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(scriptData)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ Script updated successfully:', data);
-      
-      return {
-        success: true,
-        script: data.data,
-        message: 'Script başarıyla güncellendi',
-        data: data
-      };
-    } catch (error) {
-      console.error('❌ Error updating script:', error);
-      throw error;
-    }
-  },
-
-
 
   // ✅ Environment Variables - Değişkenleri getir
   async getEnvironmentVariables() {
@@ -1437,56 +1380,11 @@ export const apiService = {
       const data = await response.json();
       console.log('✅ Environment variables fetched:', data);
       
-      if (data.success && data.data) {
+      const payload = this.extractData(data);
+      const variablesList = this.extractList(payload, ['variables', 'data']);
+      if (Array.isArray(variablesList)) {
         // API'den gelen veriyi component formatına dönüştür
-        const transformedVariables = data.data.map(variable => ({
-          id: variable.id,
-          name: variable.name,
-          value: variable.value,
-          description: variable.description || '',
-          type: variable.variable_type?.toUpperCase() || 'STRING',
-          scope: variable.scope?.toUpperCase() || 'USER',
-          last_accessed_at: variable.last_accessed_at,
-          access_count: variable.access_count || 0,
-          created_at: variable.created_at,
-          updated_at: variable.updated_at,
-          last_modified_by: variable.last_modified_by
-        }));
-        
-        return {
-          success: true,
-          variables: transformedVariables,
-          message: 'Environment variables başarıyla getirildi',
-          data: data
-        };
-      } else {
-        throw new Error('Invalid API response format');
-      }
-    } catch (error) {
-      console.error('❌ Error fetching environment variables:', error);
-      throw error;
-    }
-  },
-
-  // ✅ Environment Variables - Değişkenleri getir
-  async getEnvironmentVariables() {
-    try {
-      console.log('📋 Fetching environment variables');
-      
-      const response = await fetch(`${API_BASE_URL}/envar/`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ Environment variables fetched:', data);
-      
-      if (data.success && data.data) {
-        // API'den gelen veriyi component formatına dönüştür
-        const transformedVariables = data.data.map(variable => ({
+        const transformedVariables = variablesList.map(variable => ({
           id: variable.id,
           name: variable.name,
           value: variable.value,
@@ -1520,12 +1418,34 @@ export const apiService = {
     try {
       console.log('🔄 Creating environment variable with data:', variableData);
       
+      // Ensure variable_type is one of the allowed values in uppercase
+      const allowedVariableTypes = ['STRING', 'INTEGER', 'FLOAT', 'BOOLEAN', 'JSON', 'SECRET', 'CREDENTIAL', 'FILE_PATH', 'URL'];
+      const variableType = (variableData.variable_type || 'STRING').toUpperCase();
+      
+      // Ensure scope is one of the allowed values in uppercase
+      const allowedScopes = ['GLOBAL', 'WORKFLOW', 'TRIGGER', 'USER', 'NODE'];
+      const scope = (variableData.scope || 'USER').toUpperCase();
+      
+      // Validate variable_type
+      if (!allowedVariableTypes.includes(variableType)) {
+        throw new Error(`Invalid variable_type. Must be one of: ${allowedVariableTypes.join(', ')}`);
+      }
+      
+      // Validate scope
+      if (!allowedScopes.includes(scope)) {
+        throw new Error(`Invalid scope. Must be one of: ${allowedScopes.join(', ')}`);
+      }
+      
       const response = await fetch(`${API_BASE_URL}/envar/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(variableData)
+        body: JSON.stringify({
+          ...variableData,
+          variable_type: variableType,
+          scope: scope,
+        })
       });
 
       if (!response.ok) {
@@ -1554,12 +1474,34 @@ export const apiService = {
     try {
       console.log('🔄 Updating environment variable with ID:', variableId, 'data:', variableData);
       
+      // Ensure variable_type is one of the allowed values in uppercase
+      const allowedVariableTypes = ['STRING', 'INTEGER', 'FLOAT', 'BOOLEAN', 'JSON', 'SECRET', 'CREDENTIAL', 'FILE_PATH', 'URL'];
+      const variableType = (variableData.variable_type || 'STRING').toUpperCase();
+      
+      // Ensure scope is one of the allowed values in uppercase
+      const allowedScopes = ['GLOBAL', 'WORKFLOW', 'TRIGGER', 'USER', 'NODE'];
+      const scope = (variableData.scope || 'USER').toUpperCase();
+      
+      // Validate variable_type
+      if (!allowedVariableTypes.includes(variableType)) {
+        throw new Error(`Invalid variable_type. Must be one of: ${allowedVariableTypes.join(', ')}`);
+      }
+      
+      // Validate scope
+      if (!allowedScopes.includes(scope)) {
+        throw new Error(`Invalid scope. Must be one of: ${allowedScopes.join(', ')}`);
+      }
+      
       const response = await fetch(`${API_BASE_URL}/envar/${variableId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(variableData)
+        body: JSON.stringify({
+          ...variableData,
+          variable_type: variableType,
+          scope: scope,
+        })
       });
 
       if (!response.ok) {
@@ -1614,6 +1556,8 @@ export const apiService = {
       throw error;
     }
   },
+
+  // ✅ Executions listesini getir
   async getExecutions() {
     try {
       console.log('📋 Fetching executions list');
@@ -1629,11 +1573,13 @@ export const apiService = {
       const data = await response.json();
       console.log('✅ Executions list fetched:', data);
       
+      const payload = this.extractData(data);
+      const executions = this.extractList(payload, ['executions', 'data']);
       return {
         success: true,
-        executions: data.executions || [],
-        total_count: data.total_count || 0,
-        page_info: data.page_info || {},
+        executions: executions,
+        total_count: data.total_count || payload?.total_count || executions.length || 0,
+        page_info: data.page_info || payload?.page_info || {},
         message: 'Executions listesi başarıyla getirildi',
         data: data
       };
@@ -1642,5 +1588,4 @@ export const apiService = {
       throw error;
     }
   },
-
 };
