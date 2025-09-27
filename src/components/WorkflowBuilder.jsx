@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   ReactFlow,
@@ -641,7 +642,7 @@ const WorkflowBuilder = () => {
   }, [workflowId, setEdges]);
 
   return (
-    <div className="flex h-full">
+    <div className="flex" style={{ height: 'calc(100vh - 64px)' }}>
       <Sidebar onAddNode={addNode} />
       
       <div className="flex-1 relative">

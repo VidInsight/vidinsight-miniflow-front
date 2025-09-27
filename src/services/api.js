@@ -213,23 +213,21 @@ export const apiService = {
     };
   },
 
-  // ✅ Workflow oluştur - basit format için güncellendi
+  // ✅ Yeni workflow oluştur - güncellenmiş format
   async createWorkflow(workflowData = {}) {
     try {
       console.log('🔄 Creating workflow with data:', workflowData);
       
-      // Basit workflow payload'ı oluştur
+      // Yeni endpoint için payload oluştur
       const workflowPayload = {
         name: workflowData.name || `Yeni Workflow ${Date.now()}`,
         description: workflowData.description || 'Yeni oluşturulan workflow',
-        priority: workflowData.priority || 0,
-        nodes: workflowData.nodes || [],
-        edges: workflowData.edges || []
+        priority: workflowData.priority || 10 // Varsayılan öncelik 10 olarak ayarlandı
       };
       
-      console.log('📤 Sending workflow payload:', workflowPayload);
+      console.log('📤 Sending workflow payload to new endpoint:', workflowPayload);
 
-      const response = await fetch(`${API_BASE_URL}/workflows/create`, {
+      const response = await fetch(`${API_BASE_URL}/workflows/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -243,29 +241,31 @@ export const apiService = {
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
-      const data = await response.json();
-      console.log('✅ Workflow created successfully:', data);
+      const responseData = await response.json();
+      console.log('✅ Workflow created successfully:', responseData);
       
-      if (data.workflow_id) {
+      if (responseData.success && responseData.data && responseData.data.record_id) {
         // API'den dönen veriyi kullan
         return {
           success: true,
           workflow: {
-            id: data.workflow_id,
-            name: workflowPayload.name,
-            description: workflowPayload.description,
+            id: responseData.data.record_id, // WF-6B6D34D4B12C457AB formatında ID
+            name: workflowData.name || workflowPayload.name,
+            description: workflowData.description || workflowPayload.description,
+            priority: workflowData.priority || workflowPayload.priority,
             status: 'draft',
-            priority: workflowPayload.priority,
-            nodes: workflowPayload.nodes,
-            edges: workflowPayload.edges,
+            nodes: [],
+            edges: [],
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           },
-          message: 'Workflow başarıyla oluşturuldu',
-          data: data
+          message: responseData.message || 'Workflow başarıyla oluşturuldu',
+          data: responseData.data,
+          correlation_id: responseData.correlation_id,
+          timestamp: responseData.timestamp
         };
       } else {
-        throw new Error('API response\'da workflow_id bulunamadı');
+        throw new Error(responseData.message || 'API response\'da geçerli bir workflow yanıtı alınamadı');
       }
     } catch (error) {
       console.error('❌ Error creating workflow:', error);
@@ -649,7 +649,7 @@ export const apiService = {
     try {
       console.log('🔍 Fetching workflow details for ID:', workflowId);
       
-      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}?include_nodes=true&include_edges=true`);
+      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}?include_relationships=true`);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -697,23 +697,27 @@ export const apiService = {
         // Node pozisyonunu hesapla (grid layout)
         const x = (index % 3) * 250 + 100;
         const y = Math.floor(index / 3) * 150 + 100;
+        console.log("Node", node);
         
         return {
           id: node.name, // API'den gelen name field'ını id olarak kullan
           type: 'custom',
           position: { x, y },
           data: {
-            id: node.script_id,
+            id: node.id,
             label: node.name,
             type: 'script',
             icon: this.getIconForScript("python"),
             color: 'bg-blue-500',
-            description: 'Script node',
-            configFields: this.transformParamsToConfigFields(node.params),
-            settings: node.params || {},
-            outputParams: node.output_params || [], // API'den output_params gelmiyorsa boş object
-            nodeId: node.id, // API'den gelen node id'sini sakla
-            scriptId: node.script_id
+            description: node.description || 'Script node',
+            configFields: this.transformParamsToConfigFields(node.input_params),
+            settings: node.input_params || {},
+            outputParams: node.output_params || [], // API'den output_params gelmiyorsa boş array
+            nodeId: node.id,
+            scriptId: node.script_id,
+            maxRetries: node.max_retries,
+            timeoutSeconds: node.timeout_seconds,
+            metaData: node.meta_data
           }
         };
       });
@@ -735,7 +739,7 @@ export const apiService = {
           target: toNode.name,   // API'den gelen name field'ını kullan
           type: 'custom',
           data: {
-            condition_type: edge.condition_type || 'success'
+            condition_type: edge.condition_type || 'SUCCESS'
           }
         };
       }).filter(Boolean); // null edge'leri filtrele
@@ -748,12 +752,24 @@ export const apiService = {
         name: workflowData.name,
         description: workflowData.description,
         status: workflowData.status,
+        status_message: workflowData.status_message,
+        priority: workflowData.priority,
+        total_executions: workflowData.total_executions,
+        successful_executions: workflowData.successful_executions,
+        failed_executions: workflowData.failed_executions,
+        cancelled_executions: workflowData.cancelled_executions,
+        avg_execution_duration: workflowData.avg_execution_duration,
+        min_execution_duration: workflowData.min_execution_duration,
+        max_execution_duration: workflowData.max_execution_duration,
+        last_executed_at: workflowData.last_executed_at,
+        last_successful_execution_at: workflowData.last_successful_execution_at,
+        last_failed_execution_at: workflowData.last_failed_execution_at,
         nodes: transformedNodes,
         edges: transformedEdges,
         triggers: workflowData.triggers || [],
+        executions: workflowData.executions || [],
         created_at: workflowData.created_at,
-        updated_at: workflowData.updated_at,
-        priority: workflowData.priority
+        updated_at: workflowData.updated_at
       };
     } catch (error) {
       console.error('❌ Error transforming workflow data:', error);
@@ -770,7 +786,6 @@ export const apiService = {
       type: 'string', // Varsayılan olarak string
       label: this.formatLabel(key),
       defaultValue: value || '',
-      required: false,
       description: `${key} parametresi`
     }));
   },
@@ -782,16 +797,15 @@ export const apiService = {
       
       const nodePayload = {
         workflow_id: nodeData.workflow_id,
+        name: nodeData.name || 'test',
+        description: nodeData.description || 'string',
         script_id: nodeData.script_id,
-        name: nodeData.name,
-        params: nodeData.params || {},
-        max_retries: nodeData.max_retries || 3,
-        timeout_seconds: nodeData.timeout_seconds || 300
+        
       };
       
       console.log('📤 Sending node payload:', nodePayload);
 
-      const response = await fetch(`${API_BASE_URL}/nodes/create`, {
+      const response = await fetch(`${API_BASE_URL}/nodes/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -808,9 +822,12 @@ export const apiService = {
       const data = await response.json();
       console.log('✅ Node created successfully:', data);
       
+      // API response structure: data.data.record_id or data.record_id
+      const nodeId = data.data?.record_id || data.record_id || data.node_id || Date.now();
+      
       return {
         success: true,
-        node_id: data.node_id || Date.now(),
+        node_id: nodeId,
         message: 'Node başarıyla oluşturuldu',
         data: data
       };
@@ -827,14 +844,14 @@ export const apiService = {
       
       const edgePayload = {
         workflow_id: edgeData.workflow_id,
-        from_node_id: edgeData.from_node_id,
-        to_node_id: edgeData.to_node_id,
-        condition_type: edgeData.condition_type || 'success'
+        from_node_id: String(edgeData.from_node_id),
+        to_node_id: String(edgeData.to_node_id),
+        condition_type: edgeData.condition_type || 'SUCCESS'
       };
       
       console.log('📤 Sending edge payload:', edgePayload);
 
-      const response = await fetch(`${API_BASE_URL}/edges/create`, {
+      const response = await fetch(`${API_BASE_URL}/edges/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -851,11 +868,13 @@ export const apiService = {
       const data = await response.json();
       console.log('✅ Edge created successfully:', data);
       
+      // Return the response in the expected format
       return {
-        success: true,
-        edge_id: data.edge_id || Date.now(),
-        message: 'Edge başarıyla oluşturuldu',
-        data: data
+        success: data.success || true,
+        data: data.data || {},
+        message: data.message || 'Edge başarıyla oluşturuldu',
+        correlation_id: data.correlation_id || null,
+        timestamp: data.timestamp || new Date().toISOString()
       };
     } catch (error) {
       console.error('❌ Error creating edge:', error);
@@ -898,26 +917,28 @@ export const apiService = {
   // ✅ Node güncelle
   async updateNode(nodeId, nodeData) {
     try {
-      console.log(' Updating node with ID:', nodeId, 'data:', nodeData);
+      console.log('🔄 Updating node with ID:', nodeId, 'data:', nodeData);
       
       // nodeData null check
       if (!nodeData) {
         throw new Error('Node data is required');
       }
       
+      // Format the payload according to the new API structure
       const nodePayload = {
-        workflow_id: nodeData.workflow_id,
-        name: nodeData.name,
-        script_id: nodeData.script_id,
-        params: nodeData.params || {},
+        name: nodeData.name || 'Updated Node',
+        description: nodeData.description || 'Updated node description',
+        input_params: nodeData.input_params || {},
+        output_params: nodeData.output_params || {},
+        meta_data: nodeData.meta_data || {},
         max_retries: nodeData.max_retries || 3,
         timeout_seconds: nodeData.timeout_seconds || 300
       };
       
       console.log('📤 Sending node update payload:', nodePayload);
 
-      const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}/update`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -949,8 +970,8 @@ export const apiService = {
     try {
       console.log('🗑️ Deleting node with ID:', nodeId);
       
-      const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}/delete`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         }
@@ -1585,6 +1606,153 @@ export const apiService = {
       };
     } catch (error) {
       console.error('❌ Error fetching executions:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Trigger oluştur
+  async createTrigger(triggerData) {
+    try {
+      console.log('🔄 Creating trigger with data:', triggerData);
+      
+      const triggerPayload = {
+        workflow_id: triggerData.workflow_id,
+        name: triggerData.name || 'manual_trigger_addition_chain',
+        trigger_type: triggerData.trigger_type || 'MANUAL',
+        description: triggerData.description || 'Manual trigger for testing addition chain workflow',
+        config: triggerData.config || {
+          allow_parallel: false,
+          description: 'Test trigger for sequential addition operations'
+        },
+        status: triggerData.status || 'ACTIVE'
+      };
+      
+      console.log('📤 Sending trigger payload:', triggerPayload);
+
+      const response = await fetch(`${API_BASE_URL}/triggers/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(triggerPayload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Trigger created successfully:', data);
+      
+      return {
+        success: true,
+        trigger_id: data.data?.record_id || Date.now(),
+        message: 'Trigger başarıyla oluşturuldu',
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error creating trigger:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Node detaylarını getir
+  async getNodeDetails(nodeId) {
+    try {
+      console.log('🔍 Fetching node details for ID:', nodeId);
+      
+      const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Node details fetched:', data);
+      
+      if (data.success && data.data) {
+        const nodeData = data.data;
+        
+        // API response'unu NodeConfigPanel formatına dönüştür
+        return {
+          success: true,
+          node: {
+            id: nodeData.id,
+            name: nodeData.name,
+            description: nodeData.description,
+            workflow_id: nodeData.workflow_id,
+            script_id: nodeData.script_id,
+            input_params: nodeData.input_params || {},
+            output_params: nodeData.output_params || {},
+            meta_data: nodeData.meta_data || {},
+            max_retries: nodeData.max_retries,
+            timeout_seconds: nodeData.timeout_seconds,
+            created_at: nodeData.created_at,
+            updated_at: nodeData.updated_at
+          },
+          message: data.message || 'Node detayları başarıyla getirildi',
+          data: data
+        };
+      } else {
+        throw new Error('Invalid API response format');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching node details:', error);
+      throw error;
+    }
+  },
+
+  // ✅ Trigger çalıştır
+  async executeTrigger(triggerId) {
+    try {
+      console.log('🔄 Executing trigger with ID:', triggerId);
+      
+      const triggerPayload = {
+        input_data: {
+          test_execution: true,
+          description: "Testing addition chain workflow: 2+2, result+2, result+2"
+        }
+      };
+      
+      console.log('📤 Sending trigger execution payload:', triggerPayload);
+
+      const response = await fetch(`${API_BASE_URL}/triggers/${triggerId}/execute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(triggerPayload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Trigger executed successfully:', data);
+      
+      return {
+        success: data.success || true,
+        trigger_id: data.data?.trigger_id,
+        workflow_id: data.data?.workflow_id,
+        execution_id: data.data?.execution_id,
+        execution_status: data.data?.execution_status,
+        trigger_type: data.data?.trigger_type,
+        triggered_at: data.data?.triggered_at,
+        processed_data: data.data?.processed_data,
+        message: data.message || 'Trigger başarıyla çalıştırıldı',
+        correlation_id: data.correlation_id,
+        timestamp: data.timestamp,
+        data: data
+      };
+    } catch (error) {
+      console.error('❌ Error executing trigger:', error);
       throw error;
     }
   },

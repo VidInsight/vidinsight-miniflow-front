@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Dashboard from './components/Dashboard';
 import WorkflowBuilder from './components/WorkflowBuilder';
 import { apiService } from './services/api';
+import Builder from './components/Builder';
 
 // Create context for workflow management
 const WorkflowContext = createContext();
@@ -205,7 +206,7 @@ function App() {
             <Route path="/variables" element={<MainLayout><Variables /></MainLayout>} />
             <Route path="/monitoring" element={<MainLayout><Monitoring /></MainLayout>} />
             <Route path="/file-upload" element={<MainLayout><FileUpload /></MainLayout>} />
-            <Route path="/workflow-builder/:workflowId" element={<WorkflowBuilder />} />
+            <Route path="/workflow-builder/:workflowId" element={<Builder />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </React.Suspense>
