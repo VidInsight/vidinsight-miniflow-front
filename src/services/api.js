@@ -1,5 +1,5 @@
 // Gerçek API servisi: Tüm istekler bu base URL üzerinden yapılır
-const API_BASE_URL = 'https://n8n.vidinsight.com.tr/api/bff';
+const API_BASE_URL = 'https://n8n.vidinsight.com.tr';
 // API fonksiyonları
 // API ile ilgili tüm fonksiyonları içeren servis nesnesi
 export const apiService = {
@@ -24,7 +24,7 @@ export const apiService = {
   // Tüm workflow'ları API'den çeker ve kart formatına dönüştürür
   async getWorkflows() {
     try {
-      const response = await fetch(`${API_BASE_URL}/workflows/`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/workflows/`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -47,7 +47,7 @@ export const apiService = {
     async deleteWorkflow(workflowId) {
       try {
         console.log('🗑️ Deleting workflow with ID:', workflowId);
-        const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/bff/workflows/${workflowId}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -227,7 +227,7 @@ export const apiService = {
       
       console.log('📤 Sending workflow payload to new endpoint:', workflowPayload);
 
-      const response = await fetch(`${API_BASE_URL}/workflows/`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/workflows/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -277,7 +277,7 @@ export const apiService = {
   // Var olan bir workflow'u günceller
   async updateWorkflow(workflowId, workflowData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/update`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/workflows/${workflowId}/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -301,7 +301,7 @@ export const apiService = {
   // Script listesini API'den çeker ve node kategorilerine dönüştürür
   async getNodeCategories() {
     try {
-      const response = await fetch(`${API_BASE_URL}/scripts/`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/scripts/`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -321,7 +321,7 @@ export const apiService = {
   async deleteScript(scriptId) {
     try {
       console.log('🗑️ Deleting script with ID:', scriptId);
-      const response = await fetch(`${API_BASE_URL}/scripts/${scriptId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/scripts/${scriptId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -350,7 +350,7 @@ export const apiService = {
   // Scripts listesi (Scripts sayfası için basit liste döner)
   async getScripts() {
     try {
-      const response = await fetch(`${API_BASE_URL}/scripts/`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/scripts/`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -475,7 +475,7 @@ export const apiService = {
   // Belirli bir script'in detaylarını getir
   async getNodeDetails(nodeId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/scripts/`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/scripts/`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -511,7 +511,7 @@ export const apiService = {
     try {
       console.log('🔄 Updating workflow name:', workflowId, 'to:', newName);
       
-      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/update`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/workflows/${workflowId}/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -551,7 +551,7 @@ export const apiService = {
         return await this.updateWorkflowName(workflowId, workflowData);
       }
       
-      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}/update`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/workflows/${workflowId}/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -585,7 +585,7 @@ export const apiService = {
     try {
       console.log(' Executing workflow:', workflowId);
       
-      const response = await fetch(`${API_BASE_URL}/executions/create`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/executions/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -649,7 +649,7 @@ export const apiService = {
     try {
       console.log('🔍 Fetching workflow details for ID:', workflowId);
       
-      const response = await fetch(`${API_BASE_URL}/workflows/${workflowId}?include_relationships=true`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/workflows/${workflowId}?include_relationships=true`);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -805,7 +805,7 @@ export const apiService = {
       
       console.log('📤 Sending node payload:', nodePayload);
 
-      const response = await fetch(`${API_BASE_URL}/nodes/`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/nodes/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -851,7 +851,7 @@ export const apiService = {
       
       console.log('📤 Sending edge payload:', edgePayload);
 
-      const response = await fetch(`${API_BASE_URL}/edges/`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/edges/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -887,7 +887,7 @@ export const apiService = {
     try {
       console.log('🗑️ Deleting edge with ID:', edgeId);
       
-      const response = await fetch(`${API_BASE_URL}/edges/${edgeId}/delete`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/edges/${edgeId}/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -937,7 +937,7 @@ export const apiService = {
       
       console.log('📤 Sending node update payload:', nodePayload);
 
-      const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/nodes/${nodeId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -970,7 +970,7 @@ export const apiService = {
     try {
       console.log('🗑️ Deleting node with ID:', nodeId);
       
-      const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/nodes/${nodeId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -1003,7 +1003,7 @@ export const apiService = {
     try {
       console.log(' Fetching execution history for workflow:', workflowId);
       
-      const response = await fetch(`${API_BASE_URL}/executions/?workflow_id=${workflowId}`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/executions/?workflow_id=${workflowId}`);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -1178,7 +1178,7 @@ export const apiService = {
     try {
       console.log(' Fetching execution results for ID:', executionId);
       
-      const response = await fetch(`${API_BASE_URL}/executions/${executionId}/results`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/executions/${executionId}/results`);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -1258,7 +1258,7 @@ export const apiService = {
       formData.append('file', file);
       formData.append('is_temporary', isTemporary);
       
-      const response = await fetch(`${API_BASE_URL}/files/`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/files/`, {
         method: 'POST',
         body: formData
       });
@@ -1293,7 +1293,7 @@ export const apiService = {
     try {
       console.log('📋 Fetching files list');
       
-      const response = await fetch(`${API_BASE_URL}/files/`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/files/`);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -1323,7 +1323,7 @@ export const apiService = {
     try {
       console.log('🗑️ Deleting file with ID:', fileId);
       
-      const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/files/${fileId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -1355,7 +1355,7 @@ export const apiService = {
     try {
       console.log('🔄 Updating file status:', fileId, 'is_temporary:', isTemporary);
       
-      const response = await fetch(`${API_BASE_URL}/files/${fileId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/files/${fileId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1390,7 +1390,7 @@ export const apiService = {
     try {
       console.log('📋 Fetching environment variables');
       
-      const response = await fetch(`${API_BASE_URL}/envar/`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/envar/`);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -1457,7 +1457,7 @@ export const apiService = {
         throw new Error(`Invalid scope. Must be one of: ${allowedScopes.join(', ')}`);
       }
       
-      const response = await fetch(`${API_BASE_URL}/envar/`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/envar/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1513,7 +1513,7 @@ export const apiService = {
         throw new Error(`Invalid scope. Must be one of: ${allowedScopes.join(', ')}`);
       }
       
-      const response = await fetch(`${API_BASE_URL}/envar/${variableId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/envar/${variableId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1551,7 +1551,7 @@ export const apiService = {
     try {
       console.log('🗑️ Deleting environment variable with ID:', variableId);
       
-      const response = await fetch(`${API_BASE_URL}/envar/${variableId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/envar/${variableId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -1583,7 +1583,7 @@ export const apiService = {
     try {
       console.log('📋 Fetching executions list');
       
-      const response = await fetch(`${API_BASE_URL}/executions/`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/executions/`);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -1629,7 +1629,7 @@ export const apiService = {
       
       console.log('📤 Sending trigger payload:', triggerPayload);
 
-      const response = await fetch(`${API_BASE_URL}/triggers/`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/triggers/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1663,7 +1663,7 @@ export const apiService = {
     try {
       console.log('🔍 Fetching node details for ID:', nodeId);
       
-      const response = await fetch(`${API_BASE_URL}/nodes/${nodeId}`);
+      const response = await fetch(`${API_BASE_URL}/api/bff/nodes/${nodeId}`);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -1720,7 +1720,7 @@ export const apiService = {
       
       console.log('📤 Sending trigger execution payload:', triggerPayload);
 
-      const response = await fetch(`${API_BASE_URL}/triggers/${triggerId}/execute`, {
+      const response = await fetch(`${API_BASE_URL}/api/bff/triggers/${triggerId}/execute`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
